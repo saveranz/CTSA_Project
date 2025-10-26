@@ -1,0 +1,239 @@
+{{> head}}
+<body class="bg-gray-50">
+  <div class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 flex items-center justify-center">
+                <img src="/logo.png" alt="MINSU Logo" class="w-10 h-10 object-cover rounded-lg" />
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-gray-900">CollegeTrack</h1>
+                <p class="text-sm text-gray-600">Student Check In/Out</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <div class="text-sm font-medium text-gray-900">{{ userName }}</div>
+              <div class="text-sm text-gray-600">{{ userRole }}</div>
+            </div>
+            <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex space-x-8">
+          <a href="/student-dashboard" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Dashboard</a>
+          <a href="/student/checkinout" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">Check In/Out</a>
+          <a href="/student/calendar" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Calendar</a>
+          <a href="/student/subjects" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Subjects</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main content matching attached UI -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0">
+
+        <!-- Current Status (full-width) -->
+        <div class="bg-white rounded-lg shadow-sm border border-green-100 p-6 mb-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <div class="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden">
+                <img src="/logo.png" alt="MINSU Logo" class="w-full h-full object-cover" />
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">{{ userName }}</h3>
+                <p class="text-sm text-gray-600">{{ course }} • {{ yearLevel }} Year</p>
+                <p class="text-sm text-gray-600">Student ID: {{ studentId }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-6">
+              <div class="text-right">
+                <span id="checkStatusBadge" class="inline-block bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">Not Checked In</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today's Schedule -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Today's Schedule</h3>
+          <p class="text-sm text-gray-600 mb-4">Your course schedule for today</p>
+
+          <div id="todaySchedule" class="space-y-4">
+            <!-- Example schedule items - will be replaced by dynamic data -->
+            <div class="bg-green-50 border border-green-100 rounded-lg p-4 flex justify-between items-center">
+              <div>
+                <div class="font-medium text-gray-900">Data Structures &amp; Algorithms</div>
+                <div class="text-sm text-gray-500">8:00 AM - 10:00 AM • Room 301</div>
+              </div>
+              <div class="text-sm text-gray-600 bg-white px-3 py-1 rounded-full border">CS 201</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+          <p class="text-sm text-gray-600 mb-4">Your attendance history for the past week</p>
+
+          <div id="recentActivity" class="space-y-4">
+            <!-- Example entries -->
+            <div class="bg-red-50 border border-red-100 rounded-lg p-4 flex justify-between items-start">
+              <div>
+                <div class="font-medium text-gray-900">Database Management</div>
+                <div class="text-sm text-gray-500">8:39 PM - Not checked out</div>
+                <div class="text-sm text-gray-500">CS 201 • 116</div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm text-gray-500">Absent</span>
+                <div class="mt-2"><button class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm">Absent</button></div>
+              </div>
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-4 flex justify-between items-start">
+              <div>
+                <div class="font-medium text-gray-900">Software Engineering</div>
+                <div class="text-sm text-gray-500">4:11 PM - Not checked out</div>
+                <div class="text-sm text-gray-500">CS 204 • Room 402</div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm text-gray-500">Late</span>
+                <div class="mt-2"><button class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">Late</button></div>
+              </div>
+            </div>
+
+            <div class="bg-green-50 border border-green-100 rounded-lg p-4 flex justify-between items-start">
+              <div>
+                <div class="font-medium text-gray-900">00418</div>
+                <div class="text-sm text-gray-500">4:49 PM - Not checked out</div>
+                <div class="text-sm text-gray-500">BSIT</div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm text-gray-500">On Time</span>
+                <div class="mt-2"><button class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">On Time</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Load student's recent activity
+    async function loadStudentActivity() {
+      try {
+        const res = await fetch('/api/student-activity');
+        const json = await res.json();
+        const container = document.getElementById('recentActivity');
+        
+        if (json.data && json.data.length > 0) {
+          container.innerHTML = '';
+          json.data.forEach(activity => {
+            const activityEl = document.createElement('div');
+            let statusClass, statusButtonClass;
+            
+            if (activity.status === 'Present') {
+              statusClass = 'bg-green-50 border-green-100';
+              statusButtonClass = 'bg-green-100 text-green-700';
+            } else if (activity.status === 'Late') {
+              statusClass = 'bg-yellow-50 border-yellow-100';
+              statusButtonClass = 'bg-yellow-100 text-yellow-700';
+            } else {
+              statusClass = 'bg-red-50 border-red-100';
+              statusButtonClass = 'bg-red-100 text-red-600';
+            }
+            
+            activityEl.className = `${statusClass} border rounded-lg p-4 flex justify-between items-start`;
+            activityEl.innerHTML = `
+              <div>
+                <div class="font-medium text-gray-900">${activity.subject}</div>
+                <div class="text-sm text-gray-500">${activity.checkIn} - ${activity.status}</div>
+                <div class="text-sm text-gray-500">${activity.course} • ${activity.campus}</div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm text-gray-500">${activity.status}</span>
+                <div class="mt-2">
+                  <button class="${statusButtonClass} px-3 py-1 rounded-full text-sm">${activity.status}</button>
+                </div>
+              </div>
+            `;
+            container.appendChild(activityEl);
+          });
+        } else {
+          container.innerHTML = `
+            <div class="text-center text-gray-500 py-8">
+              <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+              <p>No recent activity</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Failed to load student activity:', error);
+      }
+    }
+
+    // Load today's schedule
+    async function loadTodaySchedule() {
+      try {
+        const res = await fetch('/api/student-schedule');
+        const json = await res.json();
+        const container = document.getElementById('todaySchedule');
+        
+        if (json.data && json.data.length > 0) {
+          container.innerHTML = '';
+          json.data.forEach(subject => {
+            const scheduleEl = document.createElement('div');
+            scheduleEl.className = 'bg-green-50 border border-green-100 rounded-lg p-4 flex justify-between items-center';
+            scheduleEl.innerHTML = `
+              <div>
+                <div class="font-medium text-gray-900">${subject.name}</div>
+                <div class="text-sm text-gray-500">${subject.startTime} - ${subject.endTime} • ${subject.room || 'No room'}</div>
+              </div>
+              <div class="text-sm text-gray-600 bg-white px-3 py-1 rounded-full border">${subject.code || 'N/A'}</div>
+            `;
+            container.appendChild(scheduleEl);
+          });
+        } else {
+          container.innerHTML = `
+            <div class="text-center text-gray-500 py-8">
+              <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p>No classes scheduled for today</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Failed to load today\'s schedule:', error);
+      }
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      loadStudentActivity();
+      loadTodaySchedule();
+      
+      // Refresh data every 30 seconds
+      setInterval(() => {
+        loadStudentActivity();
+        loadTodaySchedule();
+      }, 30000);
+    });
+  </script>
+</body>
+{{> footer }}

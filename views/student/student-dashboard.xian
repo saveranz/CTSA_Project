@@ -1,0 +1,615 @@
+{{> head}}
+<body class="bg-gray-50">
+  <div class="min-h-screen">
+    <!-- Header Section -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <!-- Logo and Title -->
+          <div class="flex items-center">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 flex items-center justify-center">
+                <img src="/logo.png" alt="MINSU Logo" class="w-10 h-10 object-cover rounded-lg" />
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-gray-900">CollegeTrack</h1>
+                <p class="text-sm text-gray-600">College Attendance Management System</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- User Info and Time -->
+          <div class="flex items-center space-x-4">
+              <div class="text-right relative">
+                <div class="text-sm text-gray-600" id="currentTime">3:13:45 AM</div>
+                <div class="flex items-center space-x-2">
+                  <div class="text-sm font-medium text-gray-900" id="headerUserName">{{ userName }}</div>
+                  <button id="userDropdownBtn" aria-haspopup="true" aria-expanded="false" class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none">
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
+
+                  <!-- Dropdown menu -->
+                  <div id="userDropdown" class="origin-top-right absolute right-0 mt-10 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden transition-opacity duration-200" role="menu" aria-orientation="vertical" aria-labelledby="userDropdownBtn">
+                    <div class="py-1" role="none">
+                      <a href="#" id="openProfileBtn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Profile</a>
+                      <a href="#" id="openSettingsBtn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Settings</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex space-x-8">
+          <a href="/student-dashboard" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+            Dashboard
+          </a>
+          <a href="/student/checkinout" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+            Check In/Out
+          </a>
+          <a href="/student/calendar" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+            Calendar
+          </a>
+          <a href="/subjects" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+            Subjects
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0">
+        
+        <!-- Key Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <!-- Total Students Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-full -mr-10 -mt-10"></div>
+            <div class="relative">
+              <h3 class="text-sm font-medium text-gray-600 mb-2">Total Students</h3>
+              <div id="totalStudents" class="text-3xl font-bold text-green-600 mb-1">248</div>
+              <div class="text-sm text-green-600">+12 from last month</div>
+            </div>
+          </div>
+
+          <!-- Present Today Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-full -mr-10 -mt-10"></div>
+            <div class="relative">
+              <h3 class="text-sm font-medium text-gray-600 mb-2">Present Today</h3>
+              <div id="presentToday" class="text-3xl font-bold text-green-600 mb-1">224</div>
+              <div class="text-sm text-green-600">90.3% attendance rate</div>
+            </div>
+          </div>
+
+          <!-- Absent Today Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-red-100 rounded-full -mr-10 -mt-10"></div>
+            <div class="relative">
+              <h3 class="text-sm font-medium text-gray-600 mb-2">Absent Today</h3>
+              <div id="absentToday" class="text-3xl font-bold text-red-600 mb-1">24</div>
+              <div id="absentRate" class="text-sm text-red-600">9.7% absence rate</div>
+            </div>
+          </div>
+
+          <!-- Late Arrivals Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-100 rounded-full -mr-10 -mt-10"></div>
+            <div class="relative">
+              <h3 class="text-sm font-medium text-gray-600 mb-2">Late Arrivals</h3>
+              <div id="lateArrivals" class="text-3xl font-bold text-yellow-600 mb-1">18</div>
+              <div class="text-sm text-yellow-600">7.3% late arrival rate</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <!-- Weekly Attendance Overview -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Weekly Attendance Overview</h3>
+                <p class="text-sm text-gray-600">Daily attendance patterns for this week</p>
+              </div>
+              <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">This week</span>
+            </div>
+            <div class="h-64">
+              <canvas id="weeklyAttendanceChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Department Distribution -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Department Distribution</h3>
+                <p class="text-sm text-gray-600">Student distribution across college departments</p>
+              </div>
+            </div>
+            <div class="h-64 flex items-center justify-center">
+              <div class="w-48 h-48">
+                <canvas id="departmentChart"></canvas>
+              </div>
+            </div>
+            <div class="mt-4 flex justify-center space-x-6">
+              <div class="flex items-center">
+                <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                <span class="text-sm text-gray-600">Computer Studies</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                <span class="text-sm text-gray-600">Business Management</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                <span class="text-sm text-gray-600">Arts and Science</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Attendance Trend -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">Monthly Attendance Trend</h3>
+              <p class="text-sm text-gray-600">Average attendance percentage over the last 6 months</p>
+            </div>
+          </div>
+          <div class="h-64">
+            <canvas id="monthlyTrendChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js Scripts -->
+  <script>
+    // ----- Profile & Settings UI -----
+    // Create modal containers
+    const profileModalHtml = `
+      <div id="profileModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="fixed inset-0 bg-black bg-opacity-40 transition-opacity" data-close="modal"></div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6 transform transition-all">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start space-x-4">
+              <div id="profileAvatar" class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center text-green-600 font-semibold text-lg">AB</div>
+              <div>
+                <div id="profileFullName" class="font-semibold text-gray-900 dark:text-gray-100">Full Name</div>
+                <div id="profileCourse" class="text-sm text-gray-500 dark:text-gray-300">Information Technology</div>
+                <div id="profileStudentId" class="text-sm text-gray-400">00418</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div id="profileYear" class="text-sm text-gray-500">3rd Year Year</div>
+              <div class="mt-2 inline-block bg-green-600 text-white px-3 py-1 rounded-full text-sm">Active</div>
+            </div>
+          </div>
+
+          <div class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+            <div id="profileCourse2">Information Technology</div>
+            <div id="profileEmail" class="mt-2">angelicabejer07@gmail.com</div>
+            <div id="profileContact" class="mt-2">-</div>
+            <div class="mt-2 text-sm text-gray-400">Last seen just now</div>
+          </div>
+
+          <form id="profileForm" class="mt-4 hidden">
+            <div class="grid grid-cols-1 gap-2">
+              <input name="fullName" class="w-full border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+              <input name="studentId" class="w-full border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+              <input name="course" class="w-full border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+              <input name="email" type="email" class="w-full border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+              <input name="contact" class="w-full border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+            </div>
+            <div class="mt-4 flex justify-end space-x-3">
+              <button type="button" id="saveProfileBtn" class="px-4 py-2 rounded bg-green-600 text-white">Save</button>
+              <button type="button" data-close="modal" class="px-4 py-2 rounded bg-gray-200">Cancel</button>
+            </div>
+          </form>
+
+          <div class="mt-4 flex justify-end">
+            <button id="editProfileBtn" class="px-4 py-2 rounded bg-blue-50 text-blue-700 border">Edit</button>
+          </div>
+        </div>
+      </div>`;
+
+    const settingsModalHtml = `
+      <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="fixed inset-0 bg-black bg-opacity-40 transition-opacity" data-close="modal"></div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Settings</h3>
+            <button data-close="modal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">✕</button>
+          </div>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Dark Mode</div>
+                <div class="text-xs text-gray-500 dark:text-gray-300">Toggle dashboard theme</div>
+              </div>
+              <div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="darkModeToggle" class="sr-only">
+                  <div id="toggleTrack" class="w-11 h-6 bg-gray-200 rounded-full dark:bg-gray-600 relative"></div>
+                  <div id="toggleDot" class="absolute left-2.5 top-2 bg-white w-4 h-4 rounded-full shadow transform transition-transform"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // Inject modals into body
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.insertAdjacentHTML('beforeend', profileModalHtml);
+      document.body.insertAdjacentHTML('beforeend', settingsModalHtml);
+    });
+
+    // Utility to open/close modals and dropdown
+    function showDropdown() { document.getElementById('userDropdown').classList.remove('hidden'); document.getElementById('userDropdown').classList.add('opacity-100'); }
+    function hideDropdown() { document.getElementById('userDropdown').classList.add('hidden'); document.getElementById('userDropdown').classList.remove('opacity-100'); }
+    function openModal(id) { const m = document.getElementById(id); if (m) m.classList.remove('hidden'); }
+    function closeModal(id) { const m = document.getElementById(id); if (m) m.classList.add('hidden'); }
+
+    // Click handlers for dropdown and modals
+    document.addEventListener('click', (e) => {
+      const btn = document.getElementById('userDropdownBtn');
+      const dropdown = document.getElementById('userDropdown');
+      if (!btn || !dropdown) return;
+      if (btn.contains(e.target)) {
+        // toggle
+        if (dropdown.classList.contains('hidden')) showDropdown(); else hideDropdown();
+        return;
+      }
+      // close when clicking outside
+      if (!dropdown.contains(e.target)) hideDropdown();
+    });
+
+    // Open profile/settings
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'openProfileBtn') {
+        e.preventDefault(); hideDropdown(); openProfile();
+      }
+      if (e.target && e.target.id === 'openSettingsBtn') {
+        e.preventDefault(); hideDropdown(); openSettings();
+      }
+    });
+
+    // Close modals when clicking the overlay or close buttons
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.getAttribute && e.target.getAttribute('data-close') === 'modal') {
+        const modal = e.target.closest('[id$="Modal"]'); if (modal) modal.classList.add('hidden');
+      }
+    });
+
+    // Fetch and populate profile
+    async function openProfile() {
+      openModal('profileModal');
+      try {
+        const res = await fetch('/api/student');
+        if (!res.ok) throw new Error('Failed to fetch profile');
+        const json = await res.json();
+        const data = json.data;
+        // populate card view
+        document.getElementById('profileFullName').textContent = data.fullName || '';
+        document.getElementById('profileCourse').textContent = data.course || '';
+        document.getElementById('profileCourse2').textContent = data.course || '';
+        document.getElementById('profileStudentId').textContent = data.studentId || '';
+        document.getElementById('profileEmail').textContent = data.email || '';
+        document.getElementById('profileContact').textContent = data.contact || '-';
+        // avatar initials
+        const initials = (data.fullName || '').split(' ').map(n => n.charAt(0)).slice(0,2).join('').toUpperCase();
+        const avatar = document.getElementById('profileAvatar'); if (avatar) avatar.textContent = initials;
+        // set header name too
+        const headerName = document.getElementById('headerUserName'); if (headerName) headerName.textContent = data.fullName || headerName.textContent;
+        // prepare form values and id
+        const form = document.getElementById('profileForm');
+        if (form) {
+          form.elements['fullName'].value = data.fullName || '';
+          form.elements['studentId'].value = data.studentId || '';
+          form.elements['course'].value = data.course || '';
+          form.elements['email'].value = data.email || '';
+          form.elements['contact'].value = data.contact || '';
+          form.dataset.studentId = data.id;
+        }
+      } catch (err) {
+        console.error('Open profile error', err);
+      }
+    }
+
+    // Edit / Save profile
+    document.addEventListener('click', async (e) => {
+      if (!e.target) return;
+      if (e.target.id === 'editProfileBtn') {
+        // show editable form and hide card view
+        document.getElementById('profileForm').classList.remove('hidden');
+        document.getElementById('profileFullName').parentElement.parentElement.classList.add('hidden');
+        document.getElementById('editProfileBtn').classList.add('hidden');
+        return;
+      }
+
+      if (e.target.id === 'saveProfileBtn') {
+        const form = document.getElementById('profileForm'); if (!form) return;
+        const id = form.dataset.studentId;
+        const payload = {
+          fullName: form.elements['fullName'].value.trim(),
+          email: form.elements['email'].value.trim(),
+          course: form.elements['course'].value.trim(),
+          // model doesn't currently support contact, year, section persistence by default
+        };
+        // validation
+        if (!payload.fullName) return alert('Full name is required');
+        if (!payload.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload.email)) return alert('Enter a valid email');
+
+        try {
+          const res = await fetch(`/api/student/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          if (!res.ok) throw new Error('Failed to update profile');
+          const json = await res.json();
+          // update card view
+          document.getElementById('profileFullName').textContent = json.data.fullName || '';
+          document.getElementById('profileCourse').textContent = json.data.course || '';
+          document.getElementById('profileCourse2').textContent = json.data.course || '';
+          document.getElementById('profileStudentId').textContent = json.data.studentId || '';
+          document.getElementById('profileEmail').textContent = json.data.email || '';
+          // hide form and show card
+          document.getElementById('profileForm').classList.add('hidden');
+          document.getElementById('profileFullName').parentElement.parentElement.classList.remove('hidden');
+          document.getElementById('editProfileBtn').classList.remove('hidden');
+          // header update
+          document.getElementById('headerUserName').textContent = json.data.fullName || document.getElementById('headerUserName').textContent;
+          alert('Profile updated');
+        } catch (err) {
+          console.error('Save profile error', err);
+          alert('Failed to save profile');
+        }
+      }
+    });
+
+    // Settings: dark mode
+    function applyDarkMode(enabled) {
+      if (enabled) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark');
+    }
+
+
+    function openSettings() {
+      openModal('settingsModal');
+      const toggle = document.getElementById('darkModeToggle');
+      if (toggle) toggle.checked = localStorage.getItem('darkMode') === 'true';
+      updateToggleUI();
+    }
+
+    function updateToggleUI() {
+      const toggle = document.getElementById('darkModeToggle');
+      const dot = document.getElementById('toggleDot');
+      const track = document.getElementById('toggleTrack');
+      if (!toggle || !dot || !track) return;
+      if (toggle.checked) {
+        dot.style.transform = 'translateX(20px)';
+        track.style.backgroundColor = '#059669';
+        applyDarkMode(true);
+      } else {
+        dot.style.transform = 'translateX(0)';
+        track.style.backgroundColor = '';
+        applyDarkMode(false);
+      }
+    }
+
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.id === 'darkModeToggle') {
+        const enabled = e.target.checked;
+        localStorage.setItem('darkMode', enabled ? 'true' : 'false');
+        updateToggleUI();
+      }
+    });
+
+    // Initialize theme from localStorage
+    document.addEventListener('DOMContentLoaded', () => {
+      const enabled = localStorage.getItem('darkMode') === 'true';
+      applyDarkMode(enabled);
+    });
+
+    // Update current time
+    function updateTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-US', { 
+        hour12: true, 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      });
+      document.getElementById('currentTime').textContent = timeString;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // Chart instances (will be created/updated by data loader)
+    let weeklyChart, departmentChart, monthlyChart;
+
+    // Return a small fake dataset so charts always render even if API is down
+    function getFakeDashboardData() {
+      return {
+        weeklyAttendance: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          data: [85, 90, 78, 88, 92, 75, 80]
+        },
+        departmentDistribution: {
+          labels: ['Computer Studies', 'Business', 'Arts'],
+          data: [120, 80, 48]
+        },
+        monthlyTrend: {
+          labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+          data: [88, 90, 87, 91, 89, 92]
+        }
+      };
+    }
+
+    function toPercentArray(arr) {
+      if (!Array.isArray(arr)) return [];
+      // If values look like fractions (<=1), scale to 0..100, otherwise assume already percentages
+      const maxVal = Math.max(...arr.map(v => Number(v) || 0));
+      if (maxVal <= 1) return arr.map(v => Math.round((Number(v) || 0) * 100));
+      return arr.map(v => Math.round(Number(v) || 0));
+    }
+
+    function safeText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function updateWeeklyChart(attendance) {
+      const canvas = document.getElementById('weeklyAttendanceChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (weeklyChart) weeklyChart.destroy();
+
+      const labels = (attendance && attendance.labels) || [];
+      const dataArr = toPercentArray((attendance && attendance.data) || []);
+
+      weeklyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Attendance %',
+            data: dataArr,
+            backgroundColor: '#10b981',
+            borderColor: '#10b981',
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, max: 100, ticks: { stepSize: 10, callback: function(v){ return v + '%'; } }, grid: { color: '#f3f4f6' } },
+            x: { grid: { color: '#f3f4f6' } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    function updateDepartmentChart(data) {
+      const canvas = document.getElementById('departmentChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (departmentChart) departmentChart.destroy();
+
+      const labels = (data && data.labels) || [];
+      const values = (data && data.data) || [];
+
+      departmentChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{ data: values, backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0, cutout: '60%' }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+    }
+
+    function updateMonthlyChart(data) {
+      const canvas = document.getElementById('monthlyTrendChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (monthlyChart) monthlyChart.destroy();
+
+      const labels = (data && data.labels) || [];
+      const values = toPercentArray((data && data.data) || []);
+
+      monthlyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{ label: 'Average Attendance %', data: values, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: function(v){ return v + '%'; } }, grid: { color: '#f3f4f6' } }, x: { grid: { color: '#f3f4f6' } } }, plugins: { legend: { display: false } } }
+      });
+    }
+
+    // Fetch student-specific dashboard data and update UI
+    async function loadDashboardData() {
+      try {
+        const res = await fetch('/api/dashboard-data');
+        let data = null;
+        if (res && res.ok) {
+          data = await res.json();
+        } else {
+          // fallback to fake when the endpoint fails
+          data = getFakeDashboardData();
+        }
+
+        // Update metric cards (use safe helpers)
+    safeText('totalStudents', 0);
+    safeText('presentToday', 0);
+    safeText('absentToday', 0);
+    // Keep lateArrivals placeholder; real value will be set from API or fallback
+    safeText('lateArrivals', '0');
+
+        // Update charts — use provided data or fallbacks
+        
+          // If API returns no meaningful data, fall back to fake data (high values)
+          function makeFakeData() {
+            const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+            // High values near 80-100 to make lines go high
+            const weekly = { labels, data: [90, 95, 92, 88, 97, 94, 99] };
+            const dept = { labels: ['Computer Studies','Business','Arts'], data: [45, 30, 25] };
+            const months = { labels: ['May','Jun','Jul','Aug','Sep','Oct'], data: [85,90,92,95,94,98] };
+            // Requested large fake metrics
+            const metrics = { totalRecords: 1990, presentToday: 700, absentToday: 677, attendanceRate: 35, absentRate: 34 };
+            return { weekly, dept, months, metrics };
+          }
+
+          const fallback = makeFakeData();
+          const metrics = (data && data.metrics) ? data.metrics : fallback.metrics;
+      safeText('totalStudents', metrics.totalRecords || 0);
+      safeText('presentToday', metrics.presentToday || 0);
+      safeText('absentToday', metrics.absentToday || 0);
+      const attendanceRate = metrics.attendanceRate != null ? metrics.attendanceRate : 0;
+      safeText('lateArrivals', attendanceRate + '%');
+      if (metrics.absentRate != null) safeText('absentRate', (metrics.absentRate + '%'));
+
+          // Update charts (prefer API payload, otherwise use fake data)
+          const weeklyData = (data && data.weeklyAttendance && data.weeklyAttendance.data && data.weeklyAttendance.data.length) ? data.weeklyAttendance : fallback.weekly;
+          const deptData = (data && data.departmentDistribution && data.departmentDistribution.data && data.departmentDistribution.data.length) ? data.departmentDistribution : fallback.dept;
+          const monthlyData = (data && data.monthlyTrend && data.monthlyTrend.data && data.monthlyTrend.data.length) ? data.monthlyTrend : fallback.months;
+
+          updateWeeklyChart(weeklyData);
+          updateDepartmentChart(deptData);
+          updateMonthlyChart(monthlyData);
+      } catch (err) {
+        console.error('Error loading student dashboard data:', err);
+        // On error, show fake data so the page still demonstrates charts
+        const fallback = getFakeDashboardData();
+        safeText('totalStudents', 0);
+        safeText('presentToday', 0);
+        safeText('absentToday', 0);
+        safeText('lateArrivals', '0');
+        safeText('absentRate', '0%');
+        updateWeeklyChart(fallback.weeklyAttendance);
+        updateDepartmentChart(fallback.departmentDistribution);
+        updateMonthlyChart(fallback.monthlyTrend);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadDashboardData();
+      setInterval(loadDashboardData, 30000);
+    });
+  </script>
+</body>
+{{> footer }}

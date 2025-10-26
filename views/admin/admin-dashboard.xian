@@ -1,0 +1,305 @@
+{{> head}}
+<body class="bg-gray-50">
+  <div class="min-h-screen">
+    <!-- Header Section -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <!-- Logo and Title -->
+          <div class="flex items-center">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 flex items-center justify-center">
+                <img src="/logo.png" alt="MINSU Logo" class="w-10 h-10 object-cover rounded-lg" />
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-gray-900">CollegeTrack</h1>
+                <p class="text-sm text-gray-600">Admin Dashboard</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- User Info -->
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <div class="text-sm font-medium text-gray-900">{{ userName }}</div>
+              <div class="text-sm text-gray-600">{{ userRole }}</div>
+            </div>
+            <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex space-x-8">
+          <a href="/admin-dashboard" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+            Dashboard
+          </a>
+          <a href="/checkinout" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+            Check In/Out
+          </a>
+          <a href="/history" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+            History
+          </a>
+          <a href="/students" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+            Students
+          </a>
+          <a href="/calendar" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+            Calendar
+          </a>
+          <a href="/subjects" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+            Subjects
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0">
+        
+        <!-- Current Status Section -->
+        <div class="bg-green-100 rounded-lg p-6 mb-8">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <!-- Avatar -->
+              <div class="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden">
+                <img src="/logo.png" alt="MINSU Logo" class="w-full h-full object-cover" />
+              </div>
+              
+              <!-- Admin Info -->
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">{{ userName }}</h3>
+                <p class="text-sm text-gray-600">{{ userRole }}</p>
+                <p class="text-sm text-gray-600">Username: {{ userUsername }}</p>
+                <p class="text-sm text-gray-600">{{ userEmail }}</p>
+              </div>
+            </div>
+            
+            <!-- Status -->
+            <div class="text-right">
+              <span class="text-sm font-medium text-green-800">Currently Logged In</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <!-- Total Students Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-full -mr-10 -mt-10"></div>
+            <div class="relative">
+              <h3 class="text-sm font-medium text-gray-600 mb-2">Total Students</h3>
+              <div class="text-3xl font-bold text-green-600 mb-1" id="totalStudents">8</div>
+            </div>
+          </div>
+
+          <!-- Present Today Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-full -mr-10 -mt-10"></div>
+            <div class="relative">
+              <h3 class="text-sm font-medium text-gray-600 mb-2">Present Today</h3>
+              <div class="text-3xl font-bold text-gray-900 mb-1" id="presentToday">0</div>
+            </div>
+          </div>
+
+          <!-- Absent Today Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-red-100 rounded-full -mr-10 -mt-10"></div>
+            <div class="relative">
+              <h3 class="text-sm font-medium text-gray-600 mb-2">Absent Today</h3>
+              <div class="text-3xl font-bold text-red-600 mb-1 flex items-center">
+                <span id="absentToday">0</span>
+                <svg class="w-5 h-5 ml-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Late Arrivals Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-100 rounded-full -mr-10 -mt-10"></div>
+            <div class="relative">
+              <h3 class="text-sm font-medium text-gray-600 mb-2">Late Arrivals</h3>
+              <div class="text-3xl font-bold text-yellow-600 mb-1 flex items-center">
+                <span id="lateArrivals">0</span>
+                <svg class="w-5 h-5 ml-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <!-- Weekly Attendance Overview -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Weekly Attendance Overview</h3>
+                <p class="text-sm text-gray-600">Daily attendance patterns for this week</p>
+              </div>
+            </div>
+            <div class="h-64">
+              <canvas id="weeklyAttendanceChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Department Distribution -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Department Distribution</h3>
+                <p class="text-sm text-gray-600">Student distribution across college departments</p>
+              </div>
+            </div>
+            <div class="h-64 flex items-center justify-center">
+              <div class="w-48 h-48">
+                <canvas id="departmentChart"></canvas>
+              </div>
+            </div>
+            <div class="mt-4 flex justify-center space-x-6">
+              <div class="flex items-center">
+                <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                <span class="text-sm text-gray-600">Computer Studies</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                <span class="text-sm text-gray-600">Business Management</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                <span class="text-sm text-gray-600">Arts and Science</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js Scripts -->
+  <script>
+    // Load dashboard data
+    async function loadDashboardData() {
+      try {
+        const response = await fetch('/api/admin-dashboard-data');
+        const data = await response.json();
+        
+        // Update metrics
+        document.getElementById('totalStudents').textContent = data.metrics.totalStudents;
+        document.getElementById('presentToday').textContent = data.metrics.presentToday;
+        document.getElementById('absentToday').textContent = data.metrics.absentToday;
+        document.getElementById('lateArrivals').textContent = data.metrics.lateArrivals;
+        
+        // Update charts
+        updateWeeklyChart(data.weeklyAttendance);
+        updateDepartmentChart(data.departmentDistribution);
+        
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    }
+
+    // Weekly Attendance Overview Chart
+    let weeklyChart;
+    function updateWeeklyChart(data) {
+      const ctx = document.getElementById('weeklyAttendanceChart').getContext('2d');
+      
+      if (weeklyChart) {
+        weeklyChart.destroy();
+      }
+      
+      weeklyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: 'Attendance %',
+            data: data.data,
+            backgroundColor: '#10b981',
+            borderColor: '#10b981',
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                stepSize: 10,
+                callback: function(value) {
+                  return value + '%';
+                }
+              },
+              grid: {
+                color: '#f3f4f6'
+              }
+            },
+            x: {
+              grid: {
+                color: '#f3f4f6'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    }
+
+    // Department Distribution Chart
+    let departmentChart;
+    function updateDepartmentChart(data) {
+      const ctx = document.getElementById('departmentChart').getContext('2d');
+      
+      if (departmentChart) {
+        departmentChart.destroy();
+      }
+      
+      departmentChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            data: data.data,
+            backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+            borderWidth: 0,
+            cutout: '60%'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    }
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      loadDashboardData();
+      
+      // Refresh data every 30 seconds
+      setInterval(loadDashboardData, 30000);
+    });
+  </script>
+</body>
+{{> footer }}

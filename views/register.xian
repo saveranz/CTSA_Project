@@ -1,0 +1,314 @@
+{{> head}}
+<body class="min-h-screen relative bg-login bg-login-fallback">
+  <!-- Dark green overlay -->
+  <div class="absolute inset-0 bg-green-900 bg-opacity-60"></div>
+  
+  <!-- Registration Form Container -->
+  <div class="relative z-10 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Register</h1>
+        <a href="/login" class="text-gray-600 hover:text-gray-800">Close</a>
+      </div>
+
+      <!-- Flash Messages -->
+      {{#if success_msg}}
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {{ success_msg }}
+        </div>
+      {{/if}}
+      
+      {{#if error_msg}}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {{ error_msg }}
+        </div>
+      {{/if}}
+
+      <!-- User Type Selection Tabs -->
+      <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
+        <button 
+          type="button" 
+          id="studentTab" 
+          class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 bg-green-500 text-white"
+        >
+          Student
+        </button>
+        <button 
+          type="button" 
+          id="adminTab" 
+          class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 text-gray-700 hover:bg-gray-200"
+        >
+          Admin
+        </button>
+      </div>
+
+      <!-- Student Registration Form -->
+      <form id="studentForm" method="POST" action="/register/student" class="space-y-4">
+        <input type="hidden" name="userType" value="student">
+        
+        <input 
+          type="text" 
+          name="fullName" 
+          placeholder="Full Name" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required 
+        />
+        
+        <input 
+          type="email" 
+          name="email" 
+          placeholder="Email" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required 
+        />
+        
+        <input 
+          type="text" 
+          name="studentId" 
+          placeholder="Student ID" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required 
+        />
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Course</label>
+          <select 
+            name="course" 
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            required
+          >
+            <option value="">Select course</option>
+            <option value="BSIT">Bachelor of Science in Information Technology (BSIT)</option>
+            <option value="BSED - Mathematics">Bachelor of Secondary Education - Mathematics (BSED Mathematics)</option>
+            <option value="BSED - English">Bachelor of Secondary Education - English (BSED English)</option>
+            <option value="BSED - Science">Bachelor of Secondary Education - Science (BSED Science)</option>
+            <option value="PolSci">Bachelor of Science in Political Science (PolSci)</option>
+            <option value="BS Criminology">Bachelor of Science in Criminology (BS Criminology)</option>
+            <option value="BS Tourism Management">Bachelor of Science in Tourism Management (BS Tourism Management)</option>
+            <option value="BS Hospitality Management">Bachelor of Science in Hospitality Management (BS Hospitality Management)</option>
+          </select>
+        </div>
+        
+        <input 
+          type="text" 
+          name="year" 
+          placeholder="Year" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required 
+        />
+        
+        <input 
+          type="text" 
+          name="section" 
+          placeholder="Section" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required 
+        />
+        
+        <div class="relative">
+          <input 
+            type="password" 
+            name="password" 
+            id="studentPassword"
+            placeholder="Password" 
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent pr-12"
+            required 
+          />
+          <button 
+            type="button" 
+            id="toggleStudentPassword"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="relative">
+          <input 
+            type="password" 
+            name="confirmPassword" 
+            id="studentConfirmPassword"
+            placeholder="Confirm Password" 
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent pr-12"
+            required 
+          />
+          <button 
+            type="button" 
+            id="toggleStudentConfirmPassword"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <button 
+          type="submit" 
+          class="w-full bg-green-800 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-900 transition duration-200"
+        >
+          Register Student
+        </button>
+      </form>
+
+      <!-- Admin Registration Form -->
+      <form id="adminForm" method="POST" action="/register/admin" class="space-y-4 hidden">
+        <input type="hidden" name="userType" value="admin">
+        
+        <input 
+          type="text" 
+          name="fullName" 
+          placeholder="Full Name" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required 
+        />
+        
+        <input 
+          type="email" 
+          name="email" 
+          placeholder="Email" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required 
+        />
+        
+        <input 
+          type="text" 
+          name="username" 
+          placeholder="Username" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required 
+        />
+        
+        <input 
+          type="text" 
+          name="role" 
+          placeholder="Role (e.g., admin or registrar)" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required 
+        />
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+          <select 
+            name="department" 
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            required
+          >
+            <option value="">Select department</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Computer Engineering">Computer Engineering</option>
+            <option value="Political Science">Political Science</option>
+            <option value="Fisheries">Fisheries</option>
+            <option value="Education">Education</option>
+            <option value="Hospitality Management">Hospitality Management</option>
+            <option value="Tourism">Tourism</option>
+          </select>
+        </div>
+        
+        <div class="relative">
+          <input 
+            type="password" 
+            name="password" 
+            id="adminPassword"
+            placeholder="Password" 
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent pr-12"
+            required 
+          />
+          <button 
+            type="button" 
+            id="toggleAdminPassword"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="relative">
+          <input 
+            type="password" 
+            name="confirmPassword" 
+            id="adminConfirmPassword"
+            placeholder="Confirm Password" 
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent pr-12"
+            required 
+          />
+          <button 
+            type="button" 
+            id="toggleAdminConfirmPassword"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <button 
+          type="submit" 
+          class="w-full bg-green-800 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-900 transition duration-200"
+        >
+          Register Admin
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript for Tab Switching and Password Toggle -->
+  <script>
+    // Tab switching functionality
+    const studentTab = document.getElementById('studentTab');
+    const adminTab = document.getElementById('adminTab');
+    const studentForm = document.getElementById('studentForm');
+    const adminForm = document.getElementById('adminForm');
+
+    studentTab.addEventListener('click', function() {
+      studentTab.classList.add('bg-green-500', 'text-white');
+      studentTab.classList.remove('text-gray-700', 'hover:bg-gray-200');
+      adminTab.classList.remove('bg-green-500', 'text-white');
+      adminTab.classList.add('text-gray-700', 'hover:bg-gray-200');
+      studentForm.classList.remove('hidden');
+      adminForm.classList.add('hidden');
+    });
+
+    adminTab.addEventListener('click', function() {
+      adminTab.classList.add('bg-green-500', 'text-white');
+      adminTab.classList.remove('text-gray-700', 'hover:bg-gray-200');
+      studentTab.classList.remove('bg-green-500', 'text-white');
+      studentTab.classList.add('text-gray-700', 'hover:bg-gray-200');
+      adminForm.classList.remove('hidden');
+      studentForm.classList.add('hidden');
+    });
+
+    // Password toggle functionality
+    function setupPasswordToggle(toggleId, passwordId) {
+      document.getElementById(toggleId).addEventListener('click', function() {
+        const passwordField = document.getElementById(passwordId);
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+        
+        const icon = this.querySelector('svg');
+        if (type === 'text') {
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>';
+        } else {
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+        }
+      });
+    }
+
+    // Setup password toggles for all password fields
+    setupPasswordToggle('toggleStudentPassword', 'studentPassword');
+    setupPasswordToggle('toggleStudentConfirmPassword', 'studentConfirmPassword');
+    setupPasswordToggle('toggleAdminPassword', 'adminPassword');
+    setupPasswordToggle('toggleAdminConfirmPassword', 'adminConfirmPassword');
+  </script>
+</body>
+{{> footer }}

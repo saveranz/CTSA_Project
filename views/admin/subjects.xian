@@ -1,0 +1,469 @@
+{{> head}}
+<body class="bg-gray-50">
+  <div class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 flex items-center justify-center">
+                <img src="/logo.png" alt="MINSU Logo" class="w-10 h-10 object-cover rounded-lg" />
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-gray-900">CollegeTrack</h1>
+                <p class="text-sm text-gray-600">Subjects</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <div class="text-sm font-medium text-gray-900">{{ userName }}</div>
+              <div class="text-sm text-gray-600">{{ userRole }}</div>
+            </div>
+            <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Nav -->
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex space-x-8">
+          <a href="/admin-dashboard" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Dashboard</a>
+          <a href="/checkinout" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Check In/Out</a>
+          <a href="/history" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">History</a>
+          <a href="/students" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Students</a>
+          <a href="/calendar" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Calendar</a>
+          <a href="/subjects" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">Subjects</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <!-- Notification Toast -->
+      <div id="notification" class="fixed top-4 right-4 z-50 hidden">
+        <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div id="notificationIcon" class="w-5 h-5"></div>
+            </div>
+            <div class="ml-3">
+              <p id="notificationMessage" class="text-sm font-medium text-gray-900"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left: Subjects List -->
+        <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-green-100 p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Your Weekly Subjects</h3>
+            <div id="selectionIndicator" class="text-sm text-gray-500 hidden">
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                Subject selected
+              </span>
+            </div>
+          </div>
+          <div id="subjectsList" class="space-y-4">
+            <!-- subject items inserted here -->
+          </div>
+        </div>
+
+        <!-- Right: Add/Edit Form -->
+        <div class="bg-white rounded-lg shadow-sm border border-green-100 p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Add Subject</h3>
+            <div class="text-xs text-gray-500 space-y-1">
+              <div class="flex items-center space-x-2">
+                <kbd class="px-2 py-1 bg-gray-100 rounded text-xs">Ctrl+E</kbd>
+                <span>Edit selected</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <kbd class="px-2 py-1 bg-gray-100 rounded text-xs">Ctrl+D</kbd>
+                <span>Delete selected</span>
+              </div>
+            </div>
+          </div>
+          <form id="subjectForm" class="space-y-4">
+            <input type="hidden" id="subjectId" />
+            
+            <div>
+              <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Subject Name *</label>
+              <input 
+                id="name" 
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                placeholder="Subject name (e.g., Data Structures)" 
+                required
+              />
+            </div>
+            
+            <div>
+              <label for="code" class="block text-sm font-medium text-gray-700 mb-1">Subject Code</label>
+              <input 
+                id="code" 
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                placeholder="Code (e.g., CS 201)" 
+              />
+            </div>
+            
+            <div>
+              <label for="day" class="block text-sm font-medium text-gray-700 mb-1">Day of Week</label>
+              <select 
+                id="day" 
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="Sunday">Sunday</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label for="startTime" class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                <input 
+                  type="time" 
+                  id="startTime" 
+                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                  placeholder="Start time"
+                />
+              </div>
+              <div>
+                <label for="endTime" class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                <input 
+                  type="time" 
+                  id="endTime" 
+                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                  placeholder="End time"
+                />
+              </div>
+            </div>
+            <div>
+              <label for="lateThreshold" class="block text-sm font-medium text-gray-700 mb-1">Minutes to Consider Late</label>
+              <input 
+                type="number" 
+                min="0"
+                id="lateThreshold" 
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                placeholder="e.g., 15"
+              />
+              <p class="text-xs text-gray-500 mt-1">Used to compute Present/Late/Absent during check-in.</p>
+            </div>
+            
+            <div>
+              <label for="room" class="block text-sm font-medium text-gray-700 mb-1">Room/Location</label>
+              <input 
+                id="room" 
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                placeholder="Room/Location" 
+              />
+            </div>
+            
+            <div class="flex justify-end space-x-2">
+              <button 
+                type="button" 
+                id="saveBtn" 
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              >
+                Save
+              </button>
+              <button 
+                type="button" 
+                id="cancelBtn" 
+                class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Helper function to convert 24-hour time to 12-hour format
+    function to12Hour(timeStr) {
+      if (!timeStr) return '--:--';
+      const [hStr, mStr] = timeStr.split(':');
+      let h = parseInt(hStr, 10);
+      const m = parseInt(mStr, 10) || 0;
+      const suffix = h >= 12 ? 'pm' : 'am';
+      h = h % 12;
+      if (h === 0) h = 12;
+      const mm = String(m).padStart(2, '0');
+      return `${h}:${mm} ${suffix}`;
+    }
+
+    // Global variable to track selected subject
+    let selectedSubject = null;
+    let selectedElement = null;
+
+    // Notification system
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      const icon = document.getElementById('notificationIcon');
+      const messageEl = document.getElementById('notificationMessage');
+      
+      messageEl.textContent = message;
+      
+      if (type === 'success') {
+        icon.innerHTML = '<svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
+      } else if (type === 'error') {
+        icon.innerHTML = '<svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>';
+      }
+      
+      notification.classList.remove('hidden');
+      setTimeout(() => {
+        notification.classList.add('hidden');
+      }, 3000);
+    }
+
+    // Function to clear selection
+    function clearSelection() {
+      if (selectedElement) {
+        selectedElement.classList.remove('ring-2', 'ring-green-500', 'bg-green-100');
+        selectedElement.classList.add('bg-green-50');
+      }
+      selectedSubject = null;
+      selectedElement = null;
+      document.getElementById('selectionIndicator').classList.add('hidden');
+    }
+
+    // Function to select a subject
+    function selectSubject(subject, element) {
+      clearSelection();
+      selectedSubject = subject;
+      selectedElement = element;
+      element.classList.remove('bg-green-50');
+      element.classList.add('ring-2', 'ring-green-500', 'bg-green-100');
+      document.getElementById('selectionIndicator').classList.remove('hidden');
+    }
+
+
+    // Function to delete subject with confirmation
+    async function deleteSubject(subject) {
+      if (!confirm(`Are you sure you want to delete "${subject.name}"? This action cannot be undone.`)) {
+        return;
+      }
+      
+      try {
+        await fetch('/api/subjects/' + subject.id, { method: 'DELETE' });
+        showNotification(`Subject "${subject.name}" deleted successfully`, 'success');
+        fetchSubjects();
+        clearSelection();
+      } catch (error) {
+        console.error('Failed to delete subject:', error);
+        showNotification('Failed to delete subject. Please try again.', 'error');
+      }
+    }
+
+    async function fetchSubjects() {
+      try {
+        const res = await fetch('/api/subjects');
+        const json = await res.json();
+        const list = document.getElementById('subjectsList');
+        list.innerHTML = '';
+        json.data.forEach(sub => {
+          const el = document.createElement('div');
+          el.className = 'bg-green-50 border border-green-100 rounded-lg p-4 flex justify-between items-center cursor-pointer transition-all duration-200 hover:bg-green-100';
+          el.innerHTML = `
+            <div>
+              <div class="font-medium text-gray-900">${sub.name} <span class="text-sm text-gray-500">${sub.code || ''}</span></div>
+              <div class="text-sm text-gray-500">${sub.day} • ${to12Hour(sub.startTime)} - ${to12Hour(sub.endTime)} • ${sub.room || ''}</div>
+              <div class="text-xs text-gray-400">Late threshold: ${sub.lateThreshold ?? '—'} min</div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button class="editBtn bg-white border px-3 py-1 rounded text-sm hover:bg-gray-50 transition-colors duration-200" title="Edit subject (Ctrl+E)">Edit</button>
+              <button class="deleteBtn bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-200 transition-colors duration-200" title="Delete subject (Ctrl+D)">Delete</button>
+            </div>
+          `;
+          
+          // Add click handler for subject selection
+          el.addEventListener('click', (e) => {
+            // Don't select if clicking on buttons
+            if (e.target.classList.contains('editBtn') || e.target.classList.contains('deleteBtn')) {
+              return;
+            }
+            selectSubject(sub, el);
+          });
+
+          // attach handlers
+          el.querySelector('.editBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectSubject(sub, el);
+            loadSubjectIntoForm(sub);
+          });
+          el.querySelector('.deleteBtn').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            await deleteSubject(sub);
+          });
+
+          list.appendChild(el);
+        });
+      } catch (err) {
+        console.error('Failed to fetch subjects', err);
+      }
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Only handle shortcuts when not typing in form inputs
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      // Ctrl + E for edit
+      if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        if (selectedSubject) {
+          loadSubjectIntoForm(selectedSubject);
+          // Focus on the first input field
+          document.getElementById('name').focus();
+          showNotification('Subject loaded for editing', 'success');
+        } else {
+          showNotification('Please select a subject first by clicking on it.', 'error');
+        }
+      }
+
+      // Ctrl + D for delete
+      if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        if (selectedSubject) {
+          deleteSubject(selectedSubject);
+        } else {
+          showNotification('Please select a subject first by clicking on it.', 'error');
+        }
+      }
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const id = document.getElementById('subjectId').value;
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        code: document.getElementById('code').value.trim(),
+        day: document.getElementById('day').value,
+        startTime: document.getElementById('startTime').value,
+        endTime: document.getElementById('endTime').value,
+        room: document.getElementById('room').value.trim(),
+        lateThreshold: document.getElementById('lateThreshold').value
+      };
+      
+      // Enhanced validation
+      if (!payload.name) {
+        showNotification('Please enter a subject name.', 'error');
+        document.getElementById('name').focus();
+        return;
+      }
+
+      // Validate time fields
+      if (payload.startTime && payload.endTime) {
+        const startTime = new Date(`2000-01-01T${payload.startTime}`);
+        const endTime = new Date(`2000-01-01T${payload.endTime}`);
+        
+        if (startTime >= endTime) {
+          showNotification('End time must be after start time.', 'error');
+          document.getElementById('endTime').focus();
+          return;
+        }
+      }
+
+      // Show loading state
+      const saveBtn = document.getElementById('saveBtn');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = 'Saving...';
+      saveBtn.disabled = true;
+
+      try {
+        let response;
+        if (id) {
+          response = await fetch('/api/subjects/' + id, { 
+            method: 'PUT', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(payload) 
+          });
+        } else {
+          response = await fetch('/api/subjects', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(payload) 
+          });
+        }
+
+        const result = await response.json();
+
+        if (response.ok) {
+          if (id) {
+            showNotification(`Subject "${payload.name}" updated successfully`, 'success');
+          } else {
+            showNotification(`Subject "${payload.name}" created successfully`, 'success');
+          }
+          
+          // Reset form and clear selection
+          document.getElementById('subjectId').value = '';
+          document.getElementById('subjectForm').reset();
+          clearSelection();
+          fetchSubjects();
+        } else {
+          throw new Error(result.error || 'Failed to save subject');
+        }
+      } catch (error) {
+        console.error('Failed to save subject:', error);
+        showNotification(error.message || 'Failed to save subject. Please try again.', 'error');
+      } finally {
+        // Restore button state
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      }
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      document.getElementById('subjectId').value = '';
+      document.getElementById('subjectForm').reset();
+      clearSelection();
+    });
+
+    // Update form title based on mode
+    function updateFormTitle() {
+      const formTitle = document.querySelector('h3');
+      const subjectId = document.getElementById('subjectId').value;
+      if (subjectId) {
+        formTitle.textContent = 'Edit Subject';
+        formTitle.classList.add('text-green-600');
+      } else {
+        formTitle.textContent = 'Add Subject';
+        formTitle.classList.remove('text-green-600');
+      }
+    }
+
+    // Watch for changes in subjectId to update form title
+    const subjectIdInput = document.getElementById('subjectId');
+    const observer = new MutationObserver(updateFormTitle);
+    observer.observe(subjectIdInput, { attributes: true });
+
+    // Also update form title when loading subject data
+    function loadSubjectIntoForm(subject) {
+      document.getElementById('subjectId').value = subject.id;
+      document.getElementById('name').value = subject.name;
+      document.getElementById('code').value = subject.code || '';
+      document.getElementById('day').value = subject.day || 'Sunday';
+      document.getElementById('startTime').value = subject.startTime || '';
+      document.getElementById('endTime').value = subject.endTime || '';
+      document.getElementById('room').value = subject.room || '';
+      document.getElementById('lateThreshold').value = subject.lateThreshold ?? '';
+      updateFormTitle();
+    }
+
+    // initial load and polling for live updates
+    fetchSubjects();
+    setInterval(fetchSubjects, 5000);
+  </script>
+</body>
+{{> footer }}

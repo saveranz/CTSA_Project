@@ -1,0 +1,266 @@
+{{> head}}
+<body class="bg-gray-50">
+  <div class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 flex items-center justify-center">
+                <img src="/logo.png" alt="MINSU Logo" class="w-10 h-10 object-cover rounded-lg" />
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-gray-900">CollegeTrack</h1>
+                <p class="text-sm text-gray-600">Attendance History</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <div class="text-sm font-medium text-gray-900">{{ userName }}</div>
+              <div class="text-sm text-gray-600">{{ userRole }}</div>
+            </div>
+            <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Nav -->
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex space-x-8">
+          <a href="/admin-dashboard" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Dashboard</a>
+          <a href="/checkinout" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Check In/Out</a>
+          <a href="/history" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">History</a>
+          <a href="/students" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Students</a>
+          <a href="/calendar" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Calendar</a>
+          <a href="/subjects" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Subjects</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0">
+        <div class="bg-white rounded-lg shadow-sm border border-green-100 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Attendance History</h3>
+
+          <div class="overflow-x-auto">
+            <table id="historyTable" class="stripe hover" style="width:100%">
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Full Name</th>
+                  <th>Course</th>
+                  <th>Subject</th>
+                  <th>Check-In Time</th>
+                  <th>Check-Out Time</th>
+                  <th>Attendance Status</th>
+                  <th>Date of Attendance</th>
+                  <th>Campus</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- DataTables will populate rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- jQuery + DataTables CDN -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+
+  <script>
+    let historyTable;
+    
+    $(document).ready(function() {
+      // Initialize DataTable with enhanced configuration
+      historyTable = $('#historyTable').DataTable({
+        processing: true,
+        serverSide: false,
+        ajax: {
+          url: '/api/history',
+          dataSrc: 'data',
+          error: function(xhr, error, thrown) {
+            console.error('DataTables AJAX error:', error);
+            $('#historyTable tbody').html('<tr><td colspan="9" class="text-center text-gray-500">Error loading data</td></tr>');
+          }
+        },
+        columns: [
+          { 
+            data: 'studentId',
+            title: 'Student ID',
+            className: 'font-mono text-sm'
+          },
+          { 
+            data: 'studentName',
+            title: 'Full Name',
+            className: 'font-medium'
+          },
+          { 
+            data: 'course',
+            title: 'Course',
+            className: 'text-sm'
+          },
+          { 
+            data: 'subject',
+            title: 'Subject',
+            className: 'text-sm'
+          },
+          { 
+            data: 'checkIn',
+            title: 'Check-In Time',
+            className: 'text-sm font-mono'
+          },
+          { 
+            data: 'checkOut',
+            title: 'Check-Out Time',
+            className: 'text-sm font-mono',
+            render: function(data, type, row) {
+              return data || '<span class="text-gray-400">Not checked out</span>';
+            }
+          },
+          { 
+            data: 'status',
+            title: 'Status',
+            className: 'text-center',
+            render: function(data, type, row) {
+              let badgeClass = 'px-2 py-1 rounded-full text-xs font-medium ';
+              switch(data) {
+                case 'Present':
+                  badgeClass += 'bg-green-100 text-green-800';
+                  break;
+                case 'Late':
+                  badgeClass += 'bg-yellow-100 text-yellow-800';
+                  break;
+                case 'Absent':
+                  badgeClass += 'bg-red-100 text-red-800';
+                  break;
+                default:
+                  badgeClass += 'bg-gray-100 text-gray-800';
+              }
+              return '<span class="' + badgeClass + '">' + (data || 'Unknown') + '</span>';
+            }
+          },
+          { 
+            data: 'date',
+            title: 'Date',
+            className: 'text-sm',
+            render: function(data, type, row) {
+              if (data) {
+                const date = new Date(data);
+                return date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                });
+              }
+              return '';
+            }
+          },
+          { 
+            data: 'campus',
+            title: 'Campus',
+            className: 'text-sm'
+          },
+          { 
+            data: null,
+            title: 'Actions',
+            className: 'text-center',
+            orderable: false,
+            render: function(data, type, row) {
+              return `<button onclick="deleteAttendanceRecord('${row.studentId}', '${row.subject}', '${row.date}')" class="bg-red-100 hover:bg-red-200 text-red-600 px-2 py-1 rounded text-xs font-medium transition-colors duration-200">Delete</button>`;
+            }
+          }
+        ],
+        pageLength: 25,
+        responsive: true,
+        order: [[7, 'desc']], // Sort by date descending
+        dom: 'Bfrtip',
+        buttons: [
+          {
+            extend: 'excel',
+            text: 'Export Excel',
+            className: 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium'
+          },
+          {
+            extend: 'pdf',
+            text: 'Export PDF',
+            className: 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium'
+          },
+          {
+            extend: 'print',
+            text: 'Print',
+            className: 'bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium'
+          }
+        ],
+        language: {
+          processing: "Loading attendance records...",
+          emptyTable: "No attendance records found",
+          zeroRecords: "No matching records found"
+        }
+      });
+
+      // Auto-refresh every 30 seconds
+      setInterval(function() {
+        historyTable.ajax.reload(null, false); // false = don't reset paging
+      }, 30000);
+    });
+
+    // Function to refresh table (can be called from other pages)
+    function refreshHistoryTable() {
+      if (typeof historyTable !== 'undefined') {
+        historyTable.ajax.reload(null, false);
+      }
+    }
+
+    // Function to delete attendance record
+    async function deleteAttendanceRecord(studentId, subject, date) {
+      if (!confirm(`Are you sure you want to delete this attendance record?\n\nStudent: ${studentId}\nSubject: ${subject}\nDate: ${new Date(date).toLocaleDateString()}\n\nThis action cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/attendance-delete', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            studentId: studentId,
+            subject: subject,
+            date: date
+          })
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          alert('Attendance record deleted successfully');
+          historyTable.ajax.reload(null, false); // Refresh table
+        } else {
+          alert('Failed to delete record: ' + (result.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Delete error:', error);
+        alert('Failed to delete record. Please try again.');
+      }
+    }
+  </script>
+
+</body>
+{{> footer }}

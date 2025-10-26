@@ -1,0 +1,103 @@
+{{> head}}
+<body class="bg-gray-50">
+  <div class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 flex items-center justify-center">
+                <img src="/logo.png" alt="MINSU Logo" class="w-10 h-10 object-cover rounded-lg" />
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-gray-900">CollegeTrack</h1>
+                <p class="text-sm text-gray-600">Your Weekly Subjects</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div class="text-sm font-medium text-gray-900">{{ userName }}</div>
+            <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Student Nav -->
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex space-x-8">
+          <a href="/student-dashboard" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Dashboard</a>
+          <a href="/student/checkinout" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Check In/Out</a>
+          <a href="/student/calendar" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Calendar</a>
+          <a href="/subjects" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">Subjects</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Your Weekly Subjects</h3>
+          <div id="subjectList" class="space-y-4">
+            <!-- Subjects will be loaded dynamically -->
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Subject</h3>
+          <form id="subjectForm">
+            <input name="name" placeholder="Subject name (eg. Data Structures)" class="w-full mb-3 border rounded px-3 py-2" />
+            <input name="code" placeholder="Code (eg. CS 201)" class="w-full mb-3 border rounded px-3 py-2" />
+            <select name="day" class="w-full mb-3 border rounded px-3 py-2">
+              <option>Sunday</option>
+              <option>Monday</option>
+              <option>Tuesday</option>
+              <option>Wednesday</option>
+              <option>Thursday</option>
+              <option>Friday</option>
+              <option>Saturday</option>
+            </select>
+            <input name="room" placeholder="Room/Location" class="w-full mb-3 border rounded px-3 py-2" />
+            <button class="bg-green-600 text-white px-4 py-2 rounded">Save</button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Load subjects
+    async function loadSubjects() {
+      try {
+        const res = await fetch('/api/subjects');
+        const json = await res.json();
+        const container = document.getElementById('subjectList');
+        container.innerHTML = '';
+        json.data.forEach(s => {
+          const el = document.createElement('div');
+          el.className = 'bg-green-50 border border-green-100 rounded-lg p-4';
+          el.innerHTML = `<div class="font-medium">${s.name} <span class="text-sm text-gray-500">${s.code}</span></div><div class="text-sm text-gray-600">${s.day} • ${s.room || ''}</div>`;
+          container.appendChild(el);
+        });
+      } catch (err) { console.error(err); }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadSubjects();
+      document.getElementById('subjectForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const body = Object.fromEntries(fd.entries());
+        try {
+          const res = await fetch('/api/subjects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          if (!res.ok) throw new Error('Failed');
+          e.target.reset();
+          loadSubjects();
+        } catch (err) { console.error(err); }
+      });
+    });
+  </script>
+</body>
+{{> footer }}

@@ -1,0 +1,49 @@
+@tailwind base; @tailwind components; @tailwind utilities;
+
+/* Custom styles for the attendance tracking system */
+.bg-login {
+  background-image: url('/bg_login.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Fallback background if image is not available */
+.bg-login-fallback {
+  background: linear-gradient(135deg, #1a5f1a 0%, #2d7a2d 50%, #4a9b4a 100%);
+}
+
+/* Dashboard specific styles */
+.dashboard-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Chart container styles */
+.chart-container {
+  position: relative;
+  height: 16rem;
+}
+
+/* Custom scrollbar for dashboard */
+.dashboard-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.dashboard-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.dashboard-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
