@@ -275,7 +275,11 @@
         form.elements['year'].value = s.year || '';
         form.elements['section'].value = s.section || '';
 
-        document.getElementById('editStudentModal').classList.remove('hidden');
+        const modalEl = document.getElementById('editStudentModal');
+        modalEl.classList.remove('hidden');
+        // focus first input so the modal feels immediately editable
+        const firstInput = modalEl.querySelector('input[name="fullName"]');
+        if (firstInput) setTimeout(() => { try { firstInput.focus(); firstInput.select(); } catch(e){} }, 50);
       }
     </script>
   </div>
