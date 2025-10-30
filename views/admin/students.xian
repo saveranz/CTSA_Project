@@ -102,7 +102,11 @@
                   <div class="mt-2 text-sm text-gray-400">-</div>
                   <div class="mt-2 text-sm text-gray-400">Last seen just now</div>
                 </div>
-                <!-- action buttons removed per request -->
+                <!-- action buttons: Edit / Delete -->
+                <div class="mt-4 flex space-x-2">
+                  <button data-student-id="${escapeHtml(s.id)}" class="editStudentBtn bg-blue-50 text-blue-700 px-3 py-1 rounded text-sm border">Edit</button>
+                  <button data-student-id="${escapeHtml(s.id)}" class="deleteStudentBtn bg-red-50 text-red-700 px-3 py-1 rounded text-sm border">Delete</button>
+                </div>
               </div>
             </div>
           `;
@@ -130,7 +134,131 @@
         fetchStudents();
         setInterval(fetchStudents, 20000);
       });
-      // No action handlers - Edit/Delete removed
+      // Edit/Delete handlers
+      document.addEventListener('click', async (e) => {
+        if (!e.target) return;
+        // Edit button
+        if (e.target.classList && e.target.classList.contains('editStudentBtn')) {
+          const id = e.target.getAttribute('data-student-id');
+          openEditModal(id);
+        }
+
+        // Delete button
+        if (e.target.classList && e.target.classList.contains('deleteStudentBtn')) {
+          const id = e.target.getAttribute('data-student-id');
+          if (!confirm('Delete this student? This action cannot be undone.')) return;
+          try {
+            const res = await fetch(`/api/students/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Delete failed');
+            // refresh
+            fetchStudents();
+            alert('Student deleted');
+          } catch (err) {
+            console.error('Delete student error', err);
+            alert('Failed to delete student');
+          }
+        }
+      });
+
+      // --- Edit modal implementation ---
+      function openEditModal(id) {
+        // Find student data from last loaded DOM
+        const grid = document.getElementById('studentsGrid');
+        // fetch the student details from API to ensure latest
+        fetch(`/api/students`).then(r => r.json()).then(json => {
+          const s = (json.data || []).find(x => String(x.id) === String(id));
+          if (!s) return alert('Student not found');
+          showEditModal(s);
+        }).catch(err => { console.error(err); alert('Failed to load student'); });
+      }
+
+      function showEditModal(s) {
+        let modal = document.getElementById('editStudentModal');
+        if (!modal) {
+          modal = document.createElement('div');
+          modal.id = 'editStudentModal';
+          modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 hidden';
+          modal.innerHTML = `
+            <div class="fixed inset-0 bg-black bg-opacity-40" data-close="modal"></div>
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 class="text-lg font-semibold mb-4">Edit Student</h3>
+              <form id="editStudentForm" class="space-y-3">
+                <input type="hidden" name="id" />
+                <div>
+                  <label class="block text-sm text-gray-600">Full name</label>
+                  <input name="fullName" class="w-full border rounded px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600">Email</label>
+                  <input name="email" class="w-full border rounded px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600">Course</label>
+                  <input name="course" class="w-full border rounded px-3 py-2" />
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-sm text-gray-600">Year</label>
+                    <input name="year" class="w-full border rounded px-3 py-2" />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600">Section</label>
+                    <input name="section" class="w-full border rounded px-3 py-2" />
+                  </div>
+                </div>
+                <div class="flex justify-end space-x-2">
+                  <button type="button" data-close="modal" class="px-4 py-2 rounded bg-gray-200">Cancel</button>
+                  <button type="submit" class="px-4 py-2 rounded bg-green-600 text-white">Save</button>
+                </div>
+              </form>
+            </div>
+          `;
+          document.body.appendChild(modal);
+
+          // close handler
+          modal.addEventListener('click', (ev) => {
+            if (ev.target && ev.target.getAttribute && ev.target.getAttribute('data-close') === 'modal') {
+              modal.classList.add('hidden');
+            }
+          });
+
+          // submit handler
+          modal.querySelector('#editStudentForm').addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const form = ev.target;
+            const id = form.elements['id'].value;
+            const payload = {
+              fullName: form.elements['fullName'].value.trim(),
+              email: form.elements['email'].value.trim(),
+              course: form.elements['course'].value.trim(),
+              year: form.elements['year'].value.trim(),
+              section: form.elements['section'].value.trim()
+            };
+            try {
+              const res = await fetch(`/api/student/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+              if (!res.ok) throw new Error('Update failed');
+              const json = await res.json();
+              modal.classList.add('hidden');
+              fetchStudents();
+              alert('Student updated');
+            } catch (err) {
+              console.error('Update student error', err);
+              alert('Failed to update student');
+            }
+          });
+        }
+
+        // populate
+        const form = document.getElementById('editStudentForm');
+        form.elements['id'].value = s.id;
+        form.elements['fullName'].value = s.fullName || '';
+        form.elements['email'].value = s.email || '';
+        form.elements['course'].value = s.course || '';
+        form.elements['year'].value = s.year || '';
+        form.elements['section'].value = s.section || '';
+
+        document.getElementById('editStudentModal').classList.remove('hidden');
+      }
     </script>
   </div>
 </body>
