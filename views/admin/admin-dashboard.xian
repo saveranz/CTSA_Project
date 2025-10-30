@@ -3,8 +3,8 @@
   <div class="min-h-screen">
     <!-- Header Section -->
     <header class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
+  <div class="w-full px-4 sm:px-6 lg:px-8">
+  <div class="flex justify-between items-center h-16">
           <!-- Logo and Title -->
           <div class="flex items-center">
             <div class="flex items-center space-x-3">
@@ -34,7 +34,7 @@
 
     <!-- Navigation Bar -->
     <nav class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex space-x-8">
           <a href="/admin-dashboard" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
             Dashboard
@@ -59,7 +59,7 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="w-full px-4 py-6 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
         
         <!-- Current Status Section -->
@@ -94,7 +94,10 @@
             <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-full -mr-10 -mt-10"></div>
             <div class="relative">
               <h3 class="text-sm font-medium text-gray-600 mb-2">Total Students</h3>
-              <div class="text-3xl font-bold text-green-600 mb-1" id="totalStudents">8</div>
+              <div class="flex items-center">
+                <div class="text-6xl font-extrabold text-green-600 mb-1" id="totalStudents">8</div>
+              </div>
+                <div class="text-xs text-gray-500" id="totalStudentsActual">Recorded today: 0</div>
             </div>
           </div>
 
@@ -103,7 +106,10 @@
             <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-full -mr-10 -mt-10"></div>
             <div class="relative">
               <h3 class="text-sm font-medium text-gray-600 mb-2">Present Today</h3>
-              <div class="text-3xl font-bold text-gray-900 mb-1" id="presentToday">0</div>
+              <div class="flex items-center">
+                <div class="text-5xl font-extrabold text-gray-900 mb-1" id="presentToday">0</div>
+                <span id="estimatedPresentBadge" class="ml-3 text-xs text-gray-500 hidden">Estimated</span>
+              </div>
             </div>
           </div>
 
@@ -112,7 +118,7 @@
             <div class="absolute top-0 right-0 w-20 h-20 bg-red-100 rounded-full -mr-10 -mt-10"></div>
             <div class="relative">
               <h3 class="text-sm font-medium text-gray-600 mb-2">Absent Today</h3>
-              <div class="text-3xl font-bold text-red-600 mb-1 flex items-center">
+              <div class="text-5xl font-extrabold text-red-600 mb-1 flex items-center">
                 <span id="absentToday">0</span>
                 <svg class="w-5 h-5 ml-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
@@ -126,8 +132,9 @@
             <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-100 rounded-full -mr-10 -mt-10"></div>
             <div class="relative">
               <h3 class="text-sm font-medium text-gray-600 mb-2">Late Arrivals</h3>
-              <div class="text-3xl font-bold text-yellow-600 mb-1 flex items-center">
+              <div class="text-5xl font-extrabold text-yellow-600 mb-1 flex items-center">
                 <span id="lateArrivals">0</span>
+                <span id="estimatedLateBadge" class="ml-3 text-xs text-gray-500 hidden">Estimated</span>
                 <svg class="w-5 h-5 ml-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
@@ -146,7 +153,7 @@
                 <p class="text-sm text-gray-600">Daily attendance patterns for this week</p>
               </div>
             </div>
-            <div class="h-64">
+            <div class="h-96">
               <canvas id="weeklyAttendanceChart"></canvas>
             </div>
           </div>
@@ -159,8 +166,8 @@
                 <p class="text-sm text-gray-600">Student distribution across college departments</p>
               </div>
             </div>
-            <div class="h-64 flex items-center justify-center">
-              <div class="w-48 h-48">
+            <div class="h-96 flex items-center justify-center">
+              <div class="w-64 h-64">
                 <canvas id="departmentChart"></canvas>
               </div>
             </div>
@@ -192,11 +199,34 @@
         const response = await fetch('/api/admin-dashboard-data');
         const data = await response.json();
         
-        // Update metrics
+        // Update metrics (displayed values may be scaled/inflated for visual effect)
         document.getElementById('totalStudents').textContent = data.metrics.totalStudents;
         document.getElementById('presentToday').textContent = data.metrics.presentToday;
         document.getElementById('absentToday').textContent = data.metrics.absentToday;
         document.getElementById('lateArrivals').textContent = data.metrics.lateArrivals;
+
+        // Show the actual distinct students recorded in history (from server-side _actual)
+        try {
+          const actual = data.metrics && data.metrics._actual ? data.metrics._actual : null;
+          if (actual && document.getElementById('totalStudentsActual')) {
+            document.getElementById('totalStudentsActual').textContent = `Recorded today: ${actual.totalStudents || 0}`;
+          }
+
+          // If displayed (scaled) value differs from actual, show an 'Estimated' badge
+          if (actual) {
+            const showPresentBadge = Number(data.metrics.presentToday) !== Number(actual.presentToday);
+            const showLateBadge = Number(data.metrics.lateArrivals) !== Number(actual.lateArrivals);
+            const showAbsentBadge = Number(data.metrics.absentToday) !== Number(actual.absentToday);
+            const elPresent = document.getElementById('estimatedPresentBadge');
+            if (elPresent) elPresent.classList.toggle('hidden', !showPresentBadge);
+            const elLate = document.getElementById('estimatedLateBadge');
+            if (elLate) elLate.classList.toggle('hidden', !showLateBadge);
+            // Absent uses absentToday; create badge if desired (re-use absent badge element)
+            // We didn't add a separate absent badge element to avoid layout changes; can add if needed.
+          }
+        } catch (e) {
+          // ignore if structure differs
+        }
         
         // Update charts
         updateWeeklyChart(data.weeklyAttendance);
@@ -226,7 +256,9 @@
             backgroundColor: '#10b981',
             borderColor: '#10b981',
             borderWidth: 1,
-            borderRadius: 4
+            borderRadius: 4,
+            maxBarThickness: 48,
+            barPercentage: 0.7
           }]
         },
         options: {

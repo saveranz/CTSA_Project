@@ -3,7 +3,7 @@
   <div class="min-h-screen">
     <!-- Header Section -->
     <header class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <!-- Logo and Title -->
           <div class="flex items-center">
@@ -41,26 +41,18 @@
 
     <!-- Navigation Bar -->
     <nav class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex space-x-8">
-          <a href="/student-dashboard" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
-            Dashboard
-          </a>
-          <a href="/student/checkinout" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
-            Check In/Out
-          </a>
-          <a href="/student/calendar" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
-            Calendar
-          </a>
-          <a href="/student/subjects" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
-            Subjects
-          </a>
+          <a href="/student-dashboard" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Dashboard</a>
+          <a href="/student/checkinout" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Check In/Out</a>
+          <a href="/student/calendar" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Calendar</a>
+          <a href="/student/subjects" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">Subjects</a>
         </div>
       </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="w-full px-4 py-6 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
         
         <!-- Page Header -->

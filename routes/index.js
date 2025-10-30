@@ -55,6 +55,8 @@ import {
   calendarPage,
   subjectsPage,
   getSubjects,
+  getFakeSubjectsAPI,
+  seedFakeSubjects,
   createSubject,
   updateSubject,
   deleteSubject,
@@ -101,7 +103,9 @@ router.put('/api/student/:id', updateCurrentStudent);
 router.get("/calendar", calendarPage);
 router.get("/subjects", subjectsPage);
 router.get("/api/subjects", getSubjects);
+router.get('/api/fake-subjects', getFakeSubjectsAPI);
 router.post("/api/subjects", createSubject);
+router.post('/api/seed-fake-subjects', seedFakeSubjects);
 router.put("/api/subjects/:id", updateSubject);
 router.delete("/api/subjects/:id", deleteSubject);
 router.get("/api/history", getHistory);

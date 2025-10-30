@@ -3,8 +3,8 @@
   <div class="min-h-screen">
     <!-- Header Section -->
     <header class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
+  <div class="w-full px-4 sm:px-6 lg:px-8">
+  <div class="flex justify-between items-center h-16">
           <!-- Logo and Title -->
           <div class="flex items-center">
             <div class="flex items-center space-x-3">
@@ -49,7 +49,7 @@
 
     <!-- Navigation Bar -->
     <nav class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex space-x-8">
           <a href="/student-dashboard" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
             Dashboard
@@ -68,7 +68,7 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="w-full px-4 py-6 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
         
         <!-- Key Metrics Cards -->
@@ -78,7 +78,9 @@
             <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-full -mr-10 -mt-10"></div>
             <div class="relative">
               <h3 class="text-sm font-medium text-gray-600 mb-2">Total Students</h3>
-              <div id="totalStudents" class="text-3xl font-bold text-green-600 mb-1">248</div>
+              <div class="flex items-center">
+                <div id="totalStudents" class="text-6xl font-extrabold text-green-600 mb-1">248</div>
+              </div>
               <div class="text-sm text-green-600">+12 from last month</div>
             </div>
           </div>
@@ -88,7 +90,10 @@
             <div class="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-full -mr-10 -mt-10"></div>
             <div class="relative">
               <h3 class="text-sm font-medium text-gray-600 mb-2">Present Today</h3>
-              <div id="presentToday" class="text-3xl font-bold text-green-600 mb-1">224</div>
+              <div class="flex items-center">
+                <div id="presentToday" class="text-5xl font-extrabold text-green-600 mb-1">224</div>
+                <span id="estimatedPresentBadge" class="ml-3 text-xs text-gray-500 hidden">Estimated</span>
+              </div>
               <div class="text-sm text-green-600">90.3% attendance rate</div>
             </div>
           </div>
@@ -98,7 +103,10 @@
             <div class="absolute top-0 right-0 w-20 h-20 bg-red-100 rounded-full -mr-10 -mt-10"></div>
             <div class="relative">
               <h3 class="text-sm font-medium text-gray-600 mb-2">Absent Today</h3>
-              <div id="absentToday" class="text-3xl font-bold text-red-600 mb-1">24</div>
+              <div class="flex items-center">
+                <div id="absentToday" class="text-5xl font-extrabold text-red-600 mb-1">24</div>
+                <span id="estimatedAbsentBadge" class="ml-3 text-xs text-gray-500 hidden">Estimated</span>
+              </div>
               <div id="absentRate" class="text-sm text-red-600">9.7% absence rate</div>
             </div>
           </div>
@@ -108,7 +116,10 @@
             <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-100 rounded-full -mr-10 -mt-10"></div>
             <div class="relative">
               <h3 class="text-sm font-medium text-gray-600 mb-2">Late Arrivals</h3>
-              <div id="lateArrivals" class="text-3xl font-bold text-yellow-600 mb-1">18</div>
+              <div class="flex items-center">
+                <div id="lateArrivals" class="text-5xl font-extrabold text-yellow-600 mb-1">18</div>
+                <span id="estimatedLateBadge" class="ml-3 text-xs text-gray-500 hidden">Estimated</span>
+              </div>
               <div class="text-sm text-yellow-600">7.3% late arrival rate</div>
             </div>
           </div>
@@ -125,7 +136,7 @@
               </div>
               <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">This week</span>
             </div>
-            <div class="h-64">
+            <div class="h-96">
               <canvas id="weeklyAttendanceChart"></canvas>
             </div>
           </div>
@@ -138,8 +149,8 @@
                 <p class="text-sm text-gray-600">Student distribution across college departments</p>
               </div>
             </div>
-            <div class="h-64 flex items-center justify-center">
-              <div class="w-48 h-48">
+            <div class="h-96 flex items-center justify-center">
+              <div class="w-64 h-64">
                 <canvas id="departmentChart"></canvas>
               </div>
             </div>
@@ -168,7 +179,7 @@
               <p class="text-sm text-gray-600">Average attendance percentage over the last 6 months</p>
             </div>
           </div>
-          <div class="h-64">
+          <div class="h-96">
             <canvas id="monthlyTrendChart"></canvas>
           </div>
         </div>
@@ -488,7 +499,9 @@
             backgroundColor: '#10b981',
             borderColor: '#10b981',
             borderWidth: 1,
-            borderRadius: 4
+            borderRadius: 4,
+            maxBarThickness: 48,
+            barPercentage: 0.7
           }]
         },
         options: {
@@ -576,12 +589,37 @@
 
           const fallback = makeFakeData();
           const metrics = (data && data.metrics) ? data.metrics : fallback.metrics;
-      safeText('totalStudents', metrics.totalRecords || 0);
+      safeText('totalStudents', metrics.totalStudents || metrics.totalRecords || 0);
       safeText('presentToday', metrics.presentToday || 0);
       safeText('absentToday', metrics.absentToday || 0);
       const attendanceRate = metrics.attendanceRate != null ? metrics.attendanceRate : 0;
       safeText('lateArrivals', attendanceRate + '%');
       if (metrics.absentRate != null) safeText('absentRate', (metrics.absentRate + '%'));
+
+      // Show Estimated badges when displayed (possibly inflated) values differ from raw _actual values returned by the server
+      try {
+        const actual = data && data.metrics && data.metrics._actual ? data.metrics._actual : null;
+        if (actual) {
+          const displayedPresent = Number(metrics.presentToday || 0);
+          const actualPresent = Number(actual.presentToday || 0);
+          const showPresentBadge = displayedPresent !== actualPresent;
+
+          const displayedAbsent = Number(metrics.absentToday || 0);
+          const actualAbsent = Number(actual.absentToday || 0);
+          const showAbsentBadge = displayedAbsent !== actualAbsent;
+
+          // lateArrivals may be a percent stored in metrics.lateArrivals or attendanceRate
+          const displayedLate = Number(metrics.lateArrivals || metrics.attendanceRate || 0);
+          const actualLate = Number(actual.lateArrivals || actual.attendanceRate || 0);
+          const showLateBadge = displayedLate !== actualLate;
+
+          const elPresent = document.getElementById('estimatedPresentBadge'); if (elPresent) elPresent.classList.toggle('hidden', !showPresentBadge);
+          const elAbsent = document.getElementById('estimatedAbsentBadge'); if (elAbsent) elAbsent.classList.toggle('hidden', !showAbsentBadge);
+          const elLate = document.getElementById('estimatedLateBadge'); if (elLate) elLate.classList.toggle('hidden', !showLateBadge);
+        }
+      } catch (e) {
+        // ignore
+      }
 
           // Update charts (prefer API payload, otherwise use fake data)
           const weeklyData = (data && data.weeklyAttendance && data.weeklyAttendance.data && data.weeklyAttendance.data.length) ? data.weeklyAttendance : fallback.weekly;

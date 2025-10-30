@@ -3,8 +3,8 @@
   <div class="min-h-screen">
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
+  <div class="w-full px-4 sm:px-6 lg:px-8">
+  <div class="flex justify-between items-center h-16">
           <div class="flex items-center">
             <div class="flex items-center space-x-3">
               <div class="w-10 h-10 flex items-center justify-center">
@@ -29,7 +29,7 @@
 
     <!-- Nav -->
     <nav class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex space-x-8">
           <a href="/admin-dashboard" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Dashboard</a>
           <a href="/checkinout" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Check In/Out</a>
@@ -41,10 +41,20 @@
       </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <main class="w-full px-4 py-6 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
         <div class="bg-white rounded-lg shadow-sm border border-green-100 p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Attendance History</h3>
+
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-2">
+              <label for="filterDate" class="text-sm text-gray-700">Filter by date:</label>
+              <input id="filterDate" type="date" class="border rounded px-2 py-1 text-sm" />
+              <button id="filterBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">Filter</button>
+              <button id="clearBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded text-sm">Clear</button>
+            </div>
+            <div></div>
+          </div>
 
           <div class="overflow-x-auto">
             <table id="historyTable" class="stripe hover" style="width:100%">
@@ -55,7 +65,6 @@
                   <th>Course</th>
                   <th>Subject</th>
                   <th>Check-In Time</th>
-                  <th>Check-Out Time</th>
                   <th>Attendance Status</th>
                   <th>Date of Attendance</th>
                   <th>Campus</th>
@@ -94,6 +103,12 @@
         serverSide: false,
         ajax: {
           url: '/api/history',
+          data: function(d) {
+            // Send date filter if set (YYYY-MM-DD)
+            const dateVal = $('#filterDate').val();
+            if (dateVal) return { date: dateVal };
+            return {};
+          },
           dataSrc: 'data',
           error: function(xhr, error, thrown) {
             console.error('DataTables AJAX error:', error);
@@ -126,14 +141,7 @@
             title: 'Check-In Time',
             className: 'text-sm font-mono'
           },
-          { 
-            data: 'checkOut',
-            title: 'Check-Out Time',
-            className: 'text-sm font-mono',
-            render: function(data, type, row) {
-              return data || '<span class="text-gray-400">Not checked out</span>';
-            }
-          },
+          
           { 
             data: 'status',
             title: 'Status',
@@ -189,7 +197,7 @@
         ],
         pageLength: 25,
         responsive: true,
-        order: [[7, 'desc']], // Sort by date descending
+  order: [[6, 'desc']], // Sort by date descending
         dom: 'Bfrtip',
         buttons: [
           {
@@ -219,6 +227,17 @@
       setInterval(function() {
         historyTable.ajax.reload(null, false); // false = don't reset paging
       }, 30000);
+
+      // Filter button
+      $('#filterBtn').on('click', function() {
+        historyTable.ajax.reload();
+      });
+
+      // Clear button
+      $('#clearBtn').on('click', function() {
+        $('#filterDate').val('');
+        historyTable.ajax.reload();
+      });
     });
 
     // Function to refresh table (can be called from other pages)
