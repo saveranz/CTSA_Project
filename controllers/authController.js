@@ -180,6 +180,11 @@ export const getAdminDashboardData = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    // Load admin so we can scope data to their department
+    const admin = await Admin.findByPk(req.session.userId);
+    const adminFilterWhere = buildAdminAttendanceFilterWhere(admin);
+    const studentFilterWhere = buildAdminStudentFilterWhere(admin);
+
     // Get real data from database
     // Compute metrics based on attendance records for today
     const today = new Date();
@@ -187,14 +192,16 @@ export const getAdminDashboardData = async (req, res) => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const todaysRecords = await Attendance.findAll({
-      where: {
-        date: {
-          [Op.gte]: today,
-          [Op.lt]: tomorrow
-        }
-      }
-    });
+    // Apply department scoping to attendance query where possible. This
+    // doesn't change DB rows and uses token matching against `course` and
+    // `subject` string fields to conservatively filter to the admin's
+    // department. If admin has no department set, we fall back to global.
+    const todaysWhere = { date: { [Op.gte]: today, [Op.lt]: tomorrow } };
+    if (adminFilterWhere && Object.keys(adminFilterWhere).length > 0) {
+      Object.assign(todaysWhere, adminFilterWhere);
+    }
+
+    const todaysRecords = await Attendance.findAll({ where: todaysWhere });
 
     // Count distinct students by status and unique students who had attendance today
     const presentSet = new Set();
@@ -224,20 +231,15 @@ export const getAdminDashboardData = async (req, res) => {
       end.setDate(end.getDate() + 1);
 
       // Count distinct studentIds recorded in history for that day
-      const distinctCount = await Attendance.count({
-        where: {
-          date: {
-            [Op.gte]: start,
-            [Op.lt]: end
-          }
-        },
-        distinct: true,
-        col: 'studentId'
-      });
+      const countWhere = { date: { [Op.gte]: start, [Op.lt]: end } };
+      if (adminFilterWhere && Object.keys(adminFilterWhere).length > 0) {
+        Object.assign(countWhere, adminFilterWhere);
+      }
+      const distinctCount = await Attendance.count({ where: countWhere, distinct: true, col: 'studentId' });
       weeklyCounts.push(distinctCount || 0);
     }
     // Compute registered students for percentage baselines
-    const totalRegistered = await Student.count();
+    const totalRegistered = await Student.count({ where: studentFilterWhere });
 
     // Inflation percentage (e.g., 0.25 = +25%) configurable via env var
     const inflatePercent = (() => {
@@ -384,6 +386,14 @@ export const getHistory = async (req, res) => {
       where.date = { [Op.gte]: start, [Op.lt]: end };
     }
 
+    // If admin requested history, scope to their department where possible
+    let admin = null;
+    if (req.session.userType === 'admin') {
+      admin = await Admin.findByPk(req.session.userId);
+      const adminWhere = buildAdminAttendanceFilterWhere(admin);
+      if (adminWhere && Object.keys(adminWhere).length > 0) Object.assign(where, adminWhere);
+    }
+
     const records = await Attendance.findAll({ 
       where,
       order: [['date', 'DESC']], 
@@ -410,7 +420,7 @@ export const getHistory = async (req, res) => {
     if (data.length < TARGET) {
       const needed = TARGET - data.length;
       // If a date filter was provided, instruct helper to generate items for that date
-      const fakes = await getFakeHistoryEntries(needed, date);
+      const fakes = await getFakeHistoryEntries(needed, date, admin ? admin.department : null);
 
       const existingKeys = new Set(data.map(d => `${d.studentId || ''}::${d.subject || ''}::${new Date(d.date).toISOString().slice(0,10)}`));
       for (const f of fakes) {
@@ -458,7 +468,15 @@ export const getStudents = async (req, res) => {
   }
 
   try {
-    const students = await Student.findAll({ order: [['fullName', 'ASC']] });
+    // If admin, scope students to their department where possible
+    let students = null;
+    if (req.session.userType === 'admin') {
+      const admin = await Admin.findByPk(req.session.userId);
+      const studentWhere = buildAdminStudentFilterWhere(admin);
+      students = await Student.findAll({ where: studentWhere, order: [['fullName', 'ASC']] });
+    } else {
+      students = await Student.findAll({ order: [['fullName', 'ASC']] });
+    }
     let data = students.map(s => ({
       id: s.id,
       fullName: s.fullName,
@@ -474,7 +492,13 @@ export const getStudents = async (req, res) => {
     // and does not write to the DB. We avoid duplicates by studentId.
     const MIN_STUDENTS = 6;
     if (!data || data.length === 0) {
-      data = getFakeStudents();
+      // Provide department-aware fake students for admin users
+      let dept = null;
+      if (req.session.userType === 'admin') {
+        const admin = await Admin.findByPk(req.session.userId);
+        dept = admin ? admin.department : null;
+      }
+      data = getFakeStudents(dept);
     } else if (data.length < MIN_STUDENTS) {
       const needed = MIN_STUDENTS - data.length;
       const fallback = getFakeStudents();
@@ -707,6 +731,27 @@ export const getSubjects = async (req, res) => {
       } catch (e) {
         // fallthrough to returning all subjects or fake fallback
         console.warn('Failed to scope subjects to student course:', e);
+      }
+    }
+
+    // If admin requested subjects, scope subjects to their department so
+    // admins only see relevant subjects. We do NOT modify DB rows. If the
+    // DB contains any subjects, return the department-scoped subset (may be
+    // empty). Only when the DB is entirely empty do we return department-
+    // aware fake/demo subjects so UI remains populated.
+    if (req.session.userType === 'admin') {
+      try {
+        const admin = await Admin.findByPk(req.session.userId);
+        if (admin) {
+          if (subjects && subjects.length > 0) {
+            const scoped = subjects.filter(s => matchSubjectForAdmin(s, admin));
+            return res.json({ data: scoped });
+          }
+          // DB has no subjects at all — return department-aware fakes
+          return res.json({ data: getFakeITSubjects(admin.department) });
+        }
+      } catch (e) {
+        console.warn('Failed to scope subjects to admin department:', e);
       }
     }
 
@@ -969,15 +1014,17 @@ export const getRecentActivity = async (req, res) => {
   if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
   
   try {
-    const activities = await Attendance.findAll({
-      order: [['date', 'DESC']],
-      limit: 20,
-      where: {
-        date: {
-          [Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
-        }
-      }
-    });
+    // Prepare where clause for last 24 hours and optionally scope to admin dept
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const baseWhere = { date: { [Op.gte]: since } };
+    let admin = null;
+    if (req.session.userType === 'admin') {
+      admin = await Admin.findByPk(req.session.userId);
+      const adminWhere = buildAdminAttendanceFilterWhere(admin);
+      if (adminWhere && Object.keys(adminWhere).length > 0) Object.assign(baseWhere, adminWhere);
+    }
+
+    const activities = await Attendance.findAll({ order: [['date', 'DESC']], limit: 20, where: baseWhere });
     
     const data = activities.map(activity => ({
       studentName: activity.studentName,
@@ -996,7 +1043,7 @@ export const getRecentActivity = async (req, res) => {
     if (data.length < MAX) {
       const needed = MAX - data.length;
       // getFakeRecentActivities may query the Student model; await it
-      const fakes = await getFakeRecentActivities(needed);
+      const fakes = await getFakeRecentActivities(needed, admin ? admin.department : null);
 
       // Avoid exact duplicates by studentId+subject+date string
       const existingKeys = new Set(data.map(d => `${d.studentId || ''}::${d.subject || ''}::${new Date(d.date).toISOString().slice(0,10)}`));
@@ -1414,10 +1461,42 @@ export const logoutUser = (req, res) => {
 // Helper: return a set of fake IT-related subjects matching the UI structure
 // This is intentionally non-invasive: it does not alter any existing functions
 // and only provides data for testing or UI population where needed.
-export const getFakeITSubjects = () => {
+export const getFakeITSubjects = (department = null) => {
   // Keep ids stable-ish for client-side testing; real DB ids are numeric.
   // Provide a richer set of IT subjects so students see multiple classes per day
   // (up to 3 scheduled items per weekday) for more realistic demos.
+  const dept = (department || '').toLowerCase();
+  // If admin requested Education department subjects, return a small
+  // education-centric schedule instead of the IT list.
+  if (dept.includes('educ') || dept.includes('teacher') || dept.includes('education')) {
+    return [
+      // Monday
+      { id: 3001, name: 'Foundations of Education', code: 'EDU 101', day: 'Monday', startTime: '08:00', endTime: '09:30', room: 'ED201', lateThreshold: 10 },
+      { id: 3002, name: 'Child Development', code: 'EDU 102', day: 'Monday', startTime: '10:00', endTime: '11:30', room: 'ED202', lateThreshold: 10 },
+      { id: 3003, name: 'Teaching Strategies', code: 'EDU 201', day: 'Monday', startTime: '13:00', endTime: '14:30', room: 'ED203', lateThreshold: 15 },
+
+      // Tuesday
+      { id: 3011, name: 'Curriculum Development', code: 'EDU 221', day: 'Tuesday', startTime: '08:00', endTime: '09:30', room: 'ED204', lateThreshold: 10 },
+      { id: 3012, name: 'Assessment and Evaluation', code: 'EDU 222', day: 'Tuesday', startTime: '10:00', endTime: '11:30', room: 'ED205', lateThreshold: 15 },
+      { id: 3013, name: 'Educational Technology', code: 'EDU 301', day: 'Tuesday', startTime: '13:00', endTime: '15:00', room: 'ED206', lateThreshold: 15 },
+
+      // Wednesday
+      { id: 3021, name: 'Classroom Management', code: 'EDU 203', day: 'Wednesday', startTime: '08:00', endTime: '09:30', room: 'ED201', lateThreshold: 10 },
+      { id: 3022, name: 'Special Education Basics', code: 'EDU 304', day: 'Wednesday', startTime: '10:00', endTime: '11:30', room: 'ED202', lateThreshold: 15 },
+      { id: 3023, name: 'Instructional Materials Development', code: 'EDU 305', day: 'Wednesday', startTime: '13:00', endTime: '14:30', room: 'ED203', lateThreshold: 10 },
+
+      // Thursday
+      { id: 3031, name: 'Educational Psychology', code: 'EDU 211', day: 'Thursday', startTime: '08:00', endTime: '09:30', room: 'ED204', lateThreshold: 10 },
+      { id: 3032, name: 'Language Teaching Methods', code: 'EDU 312', day: 'Thursday', startTime: '10:00', endTime: '11:30', room: 'ED205', lateThreshold: 10 },
+      { id: 3033, name: 'Assessment Practicum', code: 'EDU 401', day: 'Thursday', startTime: '13:00', endTime: '15:00', room: 'ED206', lateThreshold: 15 },
+
+      // Friday
+      { id: 3041, name: 'Field Teaching (Practicum)', code: 'EDU 499', day: 'Friday', startTime: '08:00', endTime: '12:00', room: 'EDLab', lateThreshold: 10 },
+      { id: 3042, name: 'Research in Education', code: 'EDU 450', day: 'Friday', startTime: '13:00', endTime: '15:00', room: 'ED207', lateThreshold: 10 },
+      { id: 3043, name: 'Guidance and Counseling', code: 'EDU 320', day: 'Friday', startTime: '15:00', endTime: '16:30', room: 'ED208', lateThreshold: 15 }
+    ];
+  }
+
   return [
     // Monday (3)
     { id: 2001, name: 'Introduction to Programming', code: 'ITP 101', day: 'Monday', startTime: '08:00', endTime: '09:30', room: '116', lateThreshold: 10 },
@@ -1449,6 +1528,20 @@ export const getFakeITSubjects = () => {
 
 export const getFakeSubjectsAPI = (req, res) => {
   try {
+    // If admin requests fake subjects, return department-aware fakes
+    if (req && req.session && req.session.userType === 'admin') {
+      try {
+        const admin = Admin.findByPk(req.session.userId);
+        // Admin.findByPk returns a promise; return fakes after resolving
+        return admin.then(a => res.json({ data: getFakeITSubjects(a ? a.department : null) })).catch(err => {
+          console.warn('Failed fetching admin for fake subjects:', err);
+          return res.json({ data: getFakeITSubjects() });
+        });
+      } catch (e) {
+        return res.json({ data: getFakeITSubjects() });
+      }
+    }
+
     return res.json({ data: getFakeITSubjects() });
   } catch (err) {
     console.error('Get fake subjects API error:', err);
@@ -1457,10 +1550,10 @@ export const getFakeSubjectsAPI = (req, res) => {
 };
 
 
-const getFakeRecentActivities = async (limit = 5) => {
+const getFakeRecentActivities = async (limit = 5, department = null) => {
   try {
     // Fetch up to `limit` distinct students from DB (alphabetical by name)
-    const students = await Student.findAll({ limit, order: [['fullName', 'ASC']] });
+  const students = await Student.findAll({ limit, order: [['fullName', 'ASC']] });
 
     const subjects = getFakeITSubjects();
     const now = Date.now();
@@ -1474,7 +1567,7 @@ const getFakeRecentActivities = async (limit = 5) => {
         items.push({
           studentName: s.fullName,
           studentId: s.studentId || `S${s.id}`,
-          course: s.course || 'Information Technology',
+          course: s.course || department || 'Information Technology',
           subject: subj ? subj.name : 'General',
           checkIn: new Date(now - items.length * 30 * 60 * 1000).toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' }),
           status: 'Present',
@@ -1502,7 +1595,7 @@ const getFakeRecentActivities = async (limit = 5) => {
       items.push({
         studentName: f.studentName,
         studentId: f.studentId,
-        course: 'Information Technology',
+        course: department || 'Information Technology',
         subject: subj ? subj.name : 'General',
         checkIn: new Date(now - items.length * 30 * 60 * 1000).toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' }),
         status: 'Present',
@@ -1549,11 +1642,120 @@ const matchSubjectForStudent = (subject, student) => {
   }
 };
 
+// Helper: determine if a Subject likely belongs to an admin's department
+// by matching tokens in the admin.department to the subject name/code.
+// Conservative: if admin has no department set, return true.
+const matchSubjectForAdmin = (subject, admin) => {
+  try {
+    if (!admin || !admin.department) return true;
+    if (!subject) return false;
+    const dept = (admin.department || '').toLowerCase();
+    if (!dept) return true;
+    const tokens = dept.split(/[^a-z0-9]+/i).map(t => t.trim()).filter(t => t.length >= 2);
+    if (tokens.length === 0) return true;
+
+    const name = (subject.name || '').toLowerCase();
+    const code = (subject.code || '').toLowerCase();
+    for (const tk of tokens) {
+      if (name.includes(tk) || code.includes(tk)) return true;
+    }
+
+    // also match obvious 'education' -> 'edu' tokens
+    if (dept.includes('education') && (code.includes('edu') || name.includes('education') || name.includes('teacher'))) return true;
+
+    return false;
+  } catch (e) {
+    return true;
+  }
+};
+
+// Helper: determine if a given attendance/history record is relevant to an
+// admin's department via conservative token matching against `course` and
+// `subject` fields. Returns true when the record should be shown to the
+// admin. If admin has no department specified, we allow the record.
+const matchRecordForAdmin = (record, admin) => {
+  try {
+    if (!admin || !admin.department) return true;
+    if (!record) return false;
+    const dept = (admin.department || '').toLowerCase();
+    if (!dept) return true;
+    const tokens = dept.split(/[^a-z0-9]+/i).map(t => t.trim()).filter(t => t.length >= 2);
+    if (tokens.length === 0) return true;
+
+    const course = (record.course || '').toLowerCase();
+    const subject = (record.subject || '').toLowerCase();
+
+    for (const tk of tokens) {
+      if (course.includes(tk) || subject.includes(tk)) return true;
+    }
+
+    return false;
+  } catch (e) {
+    return true;
+  }
+};
+
+// Helper: determine if a student belongs to an admin's department via
+// token matching against the student's course value. If admin has no
+// department configured, return true (do not restrict).
+const matchStudentForAdmin = (student, admin) => {
+  try {
+    if (!admin || !admin.department) return true;
+    if (!student) return false;
+    const dept = (admin.department || '').toLowerCase();
+    if (!dept) return true;
+    const tokens = dept.split(/[^a-z0-9]+/i).map(t => t.trim()).filter(t => t.length >= 2);
+    if (tokens.length === 0) return true;
+    const course = (student.course || '').toLowerCase();
+    for (const tk of tokens) if (course.includes(tk)) return true;
+    return false;
+  } catch (e) {
+    return true;
+  }
+};
+
+// Build a Sequelize `where` clause used to scope Attendance queries to the
+// admin's department. Returns an object that can be merged into a `where`.
+const buildAdminAttendanceFilterWhere = (admin) => {
+  try {
+    if (!admin || !admin.department) return {};
+    const dept = (admin.department || '').toLowerCase();
+    if (!dept) return {};
+    const tokens = dept.split(/[^a-z0-9]+/i).map(t => t.trim()).filter(t => t.length >= 2);
+    if (tokens.length === 0) return {};
+
+    const ors = [];
+    for (const tk of tokens) {
+      ors.push({ course: { [Op.like]: `%${tk}%` } });
+      ors.push({ subject: { [Op.like]: `%${tk}%` } });
+    }
+    return { [Op.or]: ors };
+  } catch (e) {
+    return {};
+  }
+};
+
+// Build a Sequelize `where` clause used to scope Student queries to the
+// admin's department. Returns a `where` object for Student.findAll/count.
+const buildAdminStudentFilterWhere = (admin) => {
+  try {
+    if (!admin || !admin.department) return {};
+    const dept = (admin.department || '').toLowerCase();
+    if (!dept) return {};
+    const tokens = dept.split(/[^a-z0-9]+/i).map(t => t.trim()).filter(t => t.length >= 2);
+    if (tokens.length === 0) return {};
+    const ors = tokens.map(tk => ({ course: { [Op.like]: `%${tk}%` } }));
+    return { [Op.or]: ors };
+  } catch (e) {
+    return {};
+  }
+};
+
 // Helper: produce fake history entries using real student names (or seeded
 // fallback names). Returns attendance-shaped plain objects but does not write
 // to the DB. Dates are distributed across the past 30 days to make the
 // history table look populated for demo/testing UI without changing logic.
-const getFakeHistoryEntries = async (limit = 20, dateArg = null) => {
+const getFakeHistoryEntries = async (limit = 20, dateArg = null, department = null) => {
   try {
     // Pull some students from DB first
     const students = await Student.findAll({ limit, order: [['fullName', 'ASC']] });
@@ -1591,7 +1793,7 @@ const getFakeHistoryEntries = async (limit = 20, dateArg = null) => {
         items.push({
           studentId: s.studentId || `S${s.id}`,
           studentName: s.fullName,
-          course: s.course || 'Information Technology',
+          course: s.course || department || 'Information Technology',
           subject: subj ? subj.name : 'General',
           checkIn: checkIn.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' }),
           checkOut: maybeCheckout ? new Date(checkIn.getTime() + 2 * 60 * 60 * 1000).toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' }) : null,
@@ -1614,7 +1816,7 @@ const getFakeHistoryEntries = async (limit = 20, dateArg = null) => {
       items.push({
         studentId: f.studentId,
         studentName: f.studentName,
-        course: 'Information Technology',
+        course: department || 'Information Technology',
         subject: subj ? subj.name : 'General',
         checkIn: checkIn.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' }),
         checkOut: maybeCheckout ? new Date(checkIn.getTime() + 90 * 60000).toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' }) : null,
@@ -1633,14 +1835,15 @@ const getFakeHistoryEntries = async (limit = 20, dateArg = null) => {
 
 // Helper: return a small array of fake student objects used only for UI/demo
 // when the Student table is empty. Fields match what the Students API expects.
-const getFakeStudents = () => {
+const getFakeStudents = (department = null) => {
+  const courseVal = department || 'Information Technology';
   return [
-    { id: 1001, fullName: 'Angelica B. Bejer', email: 'angelica.bejer@example.edu', studentId: '00418', course: 'Information Technology', year: '2nd', section: 'A' },
-    { id: 1002, fullName: 'Carlos Dela Cruz', email: 'carlos.delacruz@example.edu', studentId: '00419', course: 'Information Technology', year: '2nd', section: 'A' },
-    { id: 1003, fullName: 'Maria Santos', email: 'maria.santos@example.edu', studentId: '00420', course: 'Information Technology', year: '3rd', section: 'B' },
-    { id: 1004, fullName: 'Juan Dela Cruz', email: 'juan.delacruz@example.edu', studentId: '00421', course: 'Information Technology', year: '1st', section: 'A' },
-    { id: 1005, fullName: 'Ana Reyes', email: 'ana.reyes@example.edu', studentId: '00422', course: 'Information Technology', year: '4th', section: 'C' },
-    { id: 1006, fullName: 'Pedro Tan', email: 'pedro.tan@example.edu', studentId: '00423', course: 'Information Technology', year: '2nd', section: 'B' }
+    { id: 1001, fullName: 'Angelica B. Bejer', email: 'angelica.bejer@example.edu', studentId: '00418', course: courseVal, year: '2nd', section: 'A' },
+    { id: 1002, fullName: 'Carlos Dela Cruz', email: 'carlos.delacruz@example.edu', studentId: '00419', course: courseVal, year: '2nd', section: 'A' },
+    { id: 1003, fullName: 'Maria Santos', email: 'maria.santos@example.edu', studentId: '00420', course: courseVal, year: '3rd', section: 'B' },
+    { id: 1004, fullName: 'Juan Dela Cruz', email: 'juan.delacruz@example.edu', studentId: '00421', course: courseVal, year: '1st', section: 'A' },
+    { id: 1005, fullName: 'Ana Reyes', email: 'ana.reyes@example.edu', studentId: '00422', course: courseVal, year: '4th', section: 'C' },
+    { id: 1006, fullName: 'Pedro Tan', email: 'pedro.tan@example.edu', studentId: '00423', course: courseVal, year: '2nd', section: 'B' }
   ];
 };
 
