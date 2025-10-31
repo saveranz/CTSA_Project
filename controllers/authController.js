@@ -696,9 +696,24 @@ export const getSubjects = async (req, res) => {
     const subjects = await Subject.findAll({ order: [['day', 'ASC'], ['startTime', 'ASC']] });
     // If there are no subjects in DB, return fake IT subjects so the admin UI
     // (weekly subjects list) can still render demo data.
+    // If student is requesting, try to scope subjects to the student's course
+    if (req.session.userType === 'student') {
+      try {
+        const student = await Student.findByPk(req.session.userId);
+        if (student) {
+          const scoped = subjects.filter(s => matchSubjectForStudent(s, student));
+          if (scoped.length > 0) return res.json({ data: scoped });
+        }
+      } catch (e) {
+        // fallthrough to returning all subjects or fake fallback
+        console.warn('Failed to scope subjects to student course:', e);
+      }
+    }
+
     if (!subjects || subjects.length === 0) {
       return res.json({ data: getFakeITSubjects() });
     }
+
     res.json({ data: subjects });
   } catch (error) {
     console.error('Get subjects error:', error);
@@ -1048,14 +1063,22 @@ export const getStudentSchedule = async (req, res) => {
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
     // Try to load subjects for today from the DB
-    let subjects = await Subject.findAll({
-      where: { day: today },
-      order: [['startTime', 'ASC']]
-    });
+    let subjects = await Subject.findAll({ where: { day: today }, order: [['startTime', 'ASC']] });
 
     // If DB has no subjects for today, fall back to the built-in fake IT subjects
     if (!subjects || subjects.length === 0) {
       subjects = getFakeITSubjects().filter(s => s.day === today);
+    }
+
+    // Attempt to scope to student's course so students don't see unrelated subjects
+    try {
+      const student = await Student.findByPk(req.session.userId);
+      if (student && subjects && subjects.length > 0) {
+        const scoped = subjects.filter(s => matchSubjectForStudent(s, student));
+        if (scoped.length > 0) subjects = scoped;
+      }
+    } catch (e) {
+      console.warn('Failed to scope today schedule to student:', e);
     }
 
     const data = subjects.map(subject => ({
@@ -1492,6 +1515,37 @@ const getFakeRecentActivities = async (limit = 5) => {
   } catch (err) {
     console.error('getFakeRecentActivities error:', err);
     return [];
+  }
+};
+
+// Helper: determine if a subject likely belongs to a student's course based on
+// simple keyword matching. This is intentionally conservative: if we cannot
+// decide, we return true (so subjects are not accidentally hidden).
+const matchSubjectForStudent = (subject, student) => {
+  try {
+    if (!subject || !student) return true;
+    const course = (student.course || '').toLowerCase();
+    if (!course) return true;
+
+    // Build keywords from course (split words, ignore short tokens)
+    const tokens = course.split(/[^a-z0-9]+/i).map(t => t.trim()).filter(t => t.length >= 2);
+    if (tokens.length === 0) return true;
+
+    const name = (subject.name || '').toLowerCase();
+    const code = (subject.code || '').toLowerCase();
+
+    // If any token appears in the subject name or code, we consider it relevant
+    for (const tk of tokens) {
+      if (name.includes(tk) || code.includes(tk)) return true;
+    }
+
+    // Also match common abbreviations: e.g., 'information technology' -> 'it'
+    if (course.includes('information') && (code.includes('it') || name.includes('it '))) return true;
+
+    // As a last resort, don't hide the subject (safer to show extra items)
+    return true;
+  } catch (e) {
+    return true;
   }
 };
 
