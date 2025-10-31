@@ -62,6 +62,25 @@
     </main>
 
     <script>
+      // Currently selected student card (for keyboard shortcuts)
+      let activeStudentId = null;
+
+      function setActiveStudent(id) {
+        // clear previous
+        const prev = document.querySelector('[data-student-id].active-student');
+        if (prev) prev.classList.remove('active-student', 'ring-2', 'ring-green-400');
+        if (!id) { activeStudentId = null; return; }
+        const card = document.querySelector(`[data-student-id="${id}"]`);
+        if (card) {
+          card.classList.add('active-student', 'ring-2', 'ring-green-400');
+          activeStudentId = String(id);
+        } else {
+          activeStudentId = null;
+        }
+      }
+
+      function clearActiveStudent() { setActiveStudent(null); }
+
       async function fetchStudents() {
         try {
           const res = await fetch('/api/students');
@@ -135,9 +154,32 @@
         fetchStudents();
         setInterval(fetchStudents, 20000);
       });
+      // keyboard shortcut: Ctrl+E to edit the currently selected student
+      document.addEventListener('keydown', (ev) => {
+        // Only trigger when Ctrl (or Meta on Mac) is pressed with 'e'
+        if (!ev) return;
+        const isCtrl = ev.ctrlKey || ev.metaKey;
+        if (isCtrl && (ev.key === 'e' || ev.key === 'E')) {
+          // If modal open, ignore
+          const modal = document.getElementById('editStudentModal');
+          if (modal && !modal.classList.contains('hidden')) return;
+          if (activeStudentId) {
+            ev.preventDefault();
+            openEditModal(activeStudentId);
+          }
+        }
+      });
       // Edit/Delete handlers
       document.addEventListener('click', async (e) => {
         if (!e.target) return;
+        // If user clicked on a student card (not on action buttons), mark it active
+        const card = e.target.closest('[data-student-id]');
+        if (card) {
+          // don't change selection if clicking on Edit/Delete buttons (they have handlers below)
+          if (!(e.target.classList && (e.target.classList.contains('editStudentBtn') || e.target.classList.contains('deleteStudentBtn')))) {
+            setActiveStudent(card.getAttribute('data-student-id'));
+          }
+        }
         // Edit button
         if (e.target.classList && e.target.classList.contains('editStudentBtn')) {
           const id = e.target.getAttribute('data-student-id');
