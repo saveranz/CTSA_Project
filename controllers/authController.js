@@ -50,7 +50,10 @@ export const studentDashboard = (req, res) => {
       res.render('student/student-dashboard', {
         title: 'Student Dashboard',
         userName: student ? student.fullName : req.session.userName,
-        userInitial: student ? student.fullName.charAt(0).toUpperCase() : (req.session.userName || 'U').charAt(0)
+        userInitial: student ? student.fullName.charAt(0).toUpperCase() : (req.session.userName || 'U').charAt(0),
+        course: student ? student.course : '',
+        yearLevel: student ? student.year : '',
+        studentId: student ? student.studentId : ''
       });
     } catch (error) {
       console.error('Student dashboard render error:', error);
@@ -566,7 +569,9 @@ export const studentCheckinPage = async (req, res) => {
       userName: student ? student.fullName : req.session.userName,
       userRole: 'Student',
       userInitial: student ? student.fullName.charAt(0).toUpperCase() : (req.session.userName || 'S').charAt(0),
-      studentId: student ? student.studentId : ''
+        studentId: student ? student.studentId : '',
+        course: student ? student.course : '',
+        yearLevel: student ? student.year : ''
     });
   } catch (error) {
     console.error('Student checkin page error:', error);
@@ -1038,22 +1043,31 @@ export const getStudentSchedule = async (req, res) => {
   if (!req.session.userId || req.session.userType !== 'student') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  
+
   try {
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-    const subjects = await Subject.findAll({
+
+    // Try to load subjects for today from the DB
+    let subjects = await Subject.findAll({
       where: { day: today },
       order: [['startTime', 'ASC']]
     });
-    
+
+    // If DB has no subjects for today, fall back to the built-in fake IT subjects
+    if (!subjects || subjects.length === 0) {
+      subjects = getFakeITSubjects().filter(s => s.day === today);
+    }
+
     const data = subjects.map(subject => ({
+      id: subject.id,
       name: subject.name,
       code: subject.code,
       startTime: subject.startTime,
       endTime: subject.endTime,
-      room: subject.room
+      room: subject.room,
+      lateThreshold: subject.lateThreshold || null
     }));
-    
+
     res.json({ data });
   } catch (error) {
     console.error('Get student schedule error:', error);
@@ -1379,57 +1393,33 @@ export const logoutUser = (req, res) => {
 // and only provides data for testing or UI population where needed.
 export const getFakeITSubjects = () => {
   // Keep ids stable-ish for client-side testing; real DB ids are numeric.
+  // Provide a richer set of IT subjects so students see multiple classes per day
+  // (up to 3 scheduled items per weekday) for more realistic demos.
   return [
-    {
-      id: 1001,
-      name: 'Application Development and Emerging Technologies',
-      code: 'ITP 312',
-      day: 'Monday',
-      startTime: '10:00',
-      endTime: '16:00',
-      room: '116',
-      lateThreshold: 15
-    },
-    {
-      id: 1002,
-      name: 'Networking 2',
-      code: 'ITP 311',
-      day: 'Wednesday',
-      startTime: '13:00',
-      endTime: '16:30',
-      room: '116',
-      lateThreshold: 15
-    },
-    {
-      id: 1003,
-      name: 'Event Driven Programming',
-      code: 'ITP 313',
-      day: 'Wednesday',
-      startTime: '18:00',
-      endTime: '19:00',
-      room: '205',
-      lateThreshold: 10
-    },
-    {
-      id: 1004,
-      name: 'Database Systems',
-      code: 'ITP 321',
-      day: 'Thursday',
-      startTime: '09:00',
-      endTime: '11:00',
-      room: '210',
-      lateThreshold: 10
-    },
-    {
-      id: 1005,
-      name: 'Web Technologies',
-      code: 'ITP 305',
-      day: 'Friday',
-      startTime: '14:00',
-      endTime: '16:00',
-      room: '118',
-      lateThreshold: 15
-    }
+    // Monday (3)
+    { id: 2001, name: 'Introduction to Programming', code: 'ITP 101', day: 'Monday', startTime: '08:00', endTime: '09:30', room: '116', lateThreshold: 10 },
+    { id: 2002, name: 'Computer Organization', code: 'ITP 102', day: 'Monday', startTime: '10:00', endTime: '11:30', room: '118', lateThreshold: 10 },
+    { id: 2003, name: 'Application Development and Emerging Technologies', code: 'ITP 312', day: 'Monday', startTime: '13:00', endTime: '15:00', room: '116', lateThreshold: 15 },
+
+    // Tuesday (3)
+    { id: 2011, name: 'Database Systems', code: 'ITP 321', day: 'Tuesday', startTime: '08:00', endTime: '10:00', room: '210', lateThreshold: 10 },
+    { id: 2012, name: 'Web Technologies', code: 'ITP 305', day: 'Tuesday', startTime: '10:30', endTime: '12:00', room: '118', lateThreshold: 15 },
+    { id: 2013, name: 'Mobile Application Development', code: 'ITP 401', day: 'Tuesday', startTime: '14:00', endTime: '16:00', room: '220', lateThreshold: 15 },
+
+    // Wednesday (3)
+    { id: 2021, name: 'Web Technologies (Lab)', code: 'ITP 306', day: 'Wednesday', startTime: '08:00', endTime: '09:30', room: '118', lateThreshold: 10 },
+    { id: 2022, name: 'Networking 2', code: 'ITP 311', day: 'Wednesday', startTime: '10:00', endTime: '12:00', room: '116', lateThreshold: 15 },
+    { id: 2023, name: 'Event Driven Programming', code: 'ITP 313', day: 'Wednesday', startTime: '13:00', endTime: '14:30', room: '205', lateThreshold: 10 },
+
+    // Thursday (3)
+    { id: 2031, name: 'Algorithms', code: 'ITP 201', day: 'Thursday', startTime: '08:00', endTime: '09:30', room: '301', lateThreshold: 10 },
+    { id: 2032, name: 'Database Management', code: 'ITP 322', day: 'Thursday', startTime: '10:00', endTime: '11:30', room: '205', lateThreshold: 10 },
+    { id: 2033, name: 'Software Engineering', code: 'ITP 402', day: 'Thursday', startTime: '13:00', endTime: '15:00', room: '402', lateThreshold: 15 },
+
+    // Friday (3)
+    { id: 2041, name: 'Operating Systems', code: 'ITP 305', day: 'Friday', startTime: '08:00', endTime: '09:30', room: '215', lateThreshold: 10 },
+    { id: 2042, name: 'Event Driven Programming (Lab)', code: 'ITP 314', day: 'Friday', startTime: '10:00', endTime: '11:30', room: '205', lateThreshold: 10 },
+    { id: 2043, name: 'Capstone / Project Work', code: 'ITP 499', day: 'Friday', startTime: '13:00', endTime: '16:00', room: '220', lateThreshold: 15 }
   ];
 };
 

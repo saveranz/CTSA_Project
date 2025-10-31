@@ -52,7 +52,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-gray-900">{{ userName }}</h3>
-                <p class="text-sm text-gray-600">{{ course }} • {{ yearLevel }} Year</p>
+                <p class="text-sm text-gray-600">{{ course }} • {{ yearLevel }}</p>
                 <p class="text-sm text-gray-600">Student ID: {{ studentId }}</p>
               </div>
             </div>

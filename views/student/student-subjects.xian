@@ -24,12 +24,40 @@
               <div class="text-sm text-gray-600" id="currentTime">3:13:45 AM</div>
               <div class="text-sm font-medium text-gray-900">{{ userName }}</div>
             </div>
-            <div class="relative">
-              <button class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none">
-                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="relative" id="userMenuContainer">
+              <!-- Menu toggle button -->
+              <button id="userMenuBtn" aria-haspopup="true" aria-expanded="false" class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none px-2 py-1 rounded" title="Open user menu">
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
               </button>
+
+              <!-- Dropdown menu -->
+              <div id="userMenu" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 hidden z-40" role="menu" aria-orientation="vertical" aria-labelledby="userMenuBtn">
+                <a href="#" id="openProfile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Profile</a>
+                <a href="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Settings</a>
+                <a href="/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50" role="menuitem">Logout</a>
+              </div>
+
+              <!-- Profile card (hidden until Profile clicked) -->
+              <div id="profileCard" class="absolute right-0 mt-12 w-80 bg-white rounded-lg shadow-lg border border-gray-200 p-4 hidden z-50" role="dialog" aria-modal="false" aria-label="User profile">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <span id="profileInitials" class="text-gray-700 font-bold">&nbsp;</span>
+                  </div>
+                  <div>
+                    <div id="profileName" class="text-sm font-semibold text-gray-900">{{ userName }}</div>
+                    <div id="profileEmail" class="text-sm text-gray-500">&nbsp;</div>
+                  </div>
+                </div>
+                <div class="mt-3 border-t border-gray-100 pt-3 text-sm text-gray-700">
+                  <div><strong>Course:</strong> <span id="profileCourse">&mdash;</span></div>
+                  <div class="mt-1"><strong>Year:</strong> <span id="profileYear">&mdash;</span></div>
+                </div>
+                <div class="mt-4 flex justify-end">
+                  <button id="closeProfile" class="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200">Close</button>
+                </div>
+              </div>
             </div>
             <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
               Logout
@@ -46,7 +74,7 @@
           <a href="/student-dashboard" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Dashboard</a>
           <a href="/student/checkinout" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Check In/Out</a>
           <a href="/student/calendar" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">Calendar</a>
-          <a href="/student/subjects" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">Subjects</a>
+          <a href="/student/subjects" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium">Subjects</a>
         </div>
       </div>
     </nav>
@@ -61,118 +89,29 @@
           <p class="mt-2 text-gray-600">View your enrolled subjects and schedule</p>
         </div>
 
-        <!-- Subjects Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- Subject Card 1 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span class="text-blue-600 font-bold text-lg">CS</span>
-              </div>
-              <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">CS 201</span>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Data Structures & Algorithms</h3>
-            <div class="space-y-2 text-sm text-gray-600">
-              <div class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                Monday, Wednesday, Friday
-              </div>
-              <div class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                8:00 AM - 10:00 AM
-              </div>
-              <div class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
-                Room 301
-              </div>
-            </div>
-            <div class="mt-4 pt-4 border-t border-gray-100">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-500">Attendance Rate</span>
-                <span class="text-sm font-medium text-green-600">92%</span>
-              </div>
-            </div>
+        <!-- Subjects Grid (dynamic) -->
+        <!-- Controls: search / filter / sort -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div class="flex items-center gap-3 w-full sm:w-1/2">
+            <label for="subjectSearch" class="sr-only">Search subjects</label>
+            <input id="subjectSearch" type="search" placeholder="Search subject name or code" class="w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="Search subjects by name or code" />
+            <button id="clearSearch" class="px-3 py-2 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100">Clear</button>
           </div>
+          <div class="flex items-center gap-3">
+            <label class="inline-flex items-center text-sm text-gray-700">
+              <input id="onlyIT" type="checkbox" class="form-checkbox h-4 w-4 text-indigo-600" />
+              <span class="ml-2">Only IT subjects</span>
+            </label>
+            <label class="text-sm text-gray-700">Sort:</label>
+            <select id="sortSel" class="px-2 py-1 border border-gray-200 rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+              <option value="time">By time</option>
+              <option value="name">By name</option>
+            </select>
+          </div>
+        </div>
 
-          <!-- Subject Card 2 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span class="text-green-600 font-bold text-lg">DB</span>
-              </div>
-              <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">CS 202</span>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Database Management</h3>
-            <div class="space-y-2 text-sm text-gray-600">
-              <div class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                Tuesday, Thursday
-              </div>
-              <div class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                10:00 AM - 12:00 PM
-              </div>
-              <div class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
-                Room 205
-              </div>
-            </div>
-            <div class="mt-4 pt-4 border-t border-gray-100">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-500">Attendance Rate</span>
-                <span class="text-sm font-medium text-yellow-600">78%</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Subject Card 3 -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <span class="text-purple-600 font-bold text-lg">SE</span>
-              </div>
-              <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">CS 203</span>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Software Engineering</h3>
-            <div class="space-y-2 text-sm text-gray-600">
-              <div class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                Monday, Wednesday
-              </div>
-              <div class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                2:00 PM - 4:00 PM
-              </div>
-              <div class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
-                Room 402
-              </div>
-            </div>
-            <div class="mt-4 pt-4 border-t border-gray-100">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-500">Attendance Rate</span>
-                <span class="text-sm font-medium text-green-600">88%</span>
-              </div>
-            </div>
-          </div>
+        <div id="subjectsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" role="list" aria-live="polite">
+          <!-- Loaded by JS -->
         </div>
 
         <!-- Weekly Schedule -->
@@ -190,52 +129,8 @@
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Friday</th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">8:00 - 10:00</td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">Data Structures</div>
-                    <div class="text-sm text-gray-500">Room 301</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">Data Structures</div>
-                    <div class="text-sm text-gray-500">Room 301</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">Data Structures</div>
-                    <div class="text-sm text-gray-500">Room 301</div>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">10:00 - 12:00</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">Database Management</div>
-                    <div class="text-sm text-gray-500">Room 205</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">Database Management</div>
-                    <div class="text-sm text-gray-500">Room 205</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                </tr>
-                <tr>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2:00 - 4:00</td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">Software Engineering</div>
-                    <div class="text-sm text-gray-500">Room 402</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">Software Engineering</div>
-                    <div class="text-sm text-gray-500">Room 402</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                </tr>
+              <tbody id="weeklyScheduleBody" class="bg-white divide-y divide-gray-200">
+                <!-- Rows injected by client-side JS -->
               </tbody>
             </table>
           </div>
@@ -259,6 +154,339 @@
     }
     setInterval(updateTime, 1000);
     updateTime();
+    
+    // Load subjects for student (supports search/filter/sort). Renders cards into #subjectsGrid
+    async function loadSubjects() {
+      try {
+        const searchVal = (document.getElementById('subjectSearch') && document.getElementById('subjectSearch').value || '').trim().toLowerCase();
+        const onlyIT = document.getElementById('onlyIT') && document.getElementById('onlyIT').checked;
+        const sortBy = document.getElementById('sortSel') && document.getElementById('sortSel').value;
+
+        const res = await fetch('/api/subjects');
+        let json = null;
+        if (res && res.ok) json = await res.json();
+        let data = (json && json.data) ? json.data : [];
+
+        // If DB empty, fallback to fake subjects
+        if (!data || data.length === 0) {
+          try {
+            const mod = await import('../controllers/authController.js');
+            data = mod.getFakeITSubjects();
+          } catch (e) {
+            console.warn('Could not import fake subjects helper, proceeding with empty list');
+            data = [];
+          }
+        }
+
+        // filter for IT subjects if requested
+        let filtered = data;
+        if (onlyIT) {
+          filtered = filtered.filter(s => ((s.code || '') + ' ' + (s.name || '')).toUpperCase().includes('IT'));
+        }
+
+        // apply search
+        if (searchVal) {
+          filtered = filtered.filter(s => {
+            const hay = `${s.name || ''} ${s.code || ''} ${s.room || ''}`.toLowerCase();
+            return hay.includes(searchVal);
+          });
+        }
+
+        // sort
+        if (sortBy === 'name') {
+          filtered.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+        } else {
+          // sort by time (startTime) nulls last
+          filtered.sort((a,b) => {
+            if (!a.startTime && !b.startTime) return 0;
+            if (!a.startTime) return 1;
+            if (!b.startTime) return -1;
+            return a.startTime.localeCompare(b.startTime);
+          });
+        }
+
+        const grid = document.getElementById('subjectsGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+        if (filtered.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'col-span-1 bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center text-gray-500';
+          empty.textContent = 'No subjects found';
+          grid.appendChild(empty);
+          return;
+        }
+
+        // Render each subject as a card
+        filtered.forEach(subj => {
+          const card = document.createElement('article');
+          card.setAttribute('role','listitem');
+          const isToday = subj.day === todayName;
+          card.className = `bg-white rounded-lg shadow-sm border p-6 transform transition hover:shadow-lg ${isToday ? 'border-amber-300 ring-1 ring-amber-50' : 'border-gray-200'}`;
+
+          const short = (subj.code || subj.name || '').split(' ')[0].slice(0,2).toUpperCase();
+          const codeBadge = subj.code ? `<span class="text-xs font-semibold text-white bg-indigo-600 px-2 py-1 rounded">${subj.code}</span>` : `<span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">N/A</span>`;
+          const todayBadge = isToday ? `<span class="ml-2 text-xs font-semibold text-amber-800 bg-amber-100 px-2 py-1 rounded-full">Today</span>` : '';
+
+          card.innerHTML = `
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span class="text-gray-700 font-bold text-lg">${short}</span>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">${subj.name || 'Untitled'}</h3>
+                  <div class="text-sm text-gray-500 mt-1">${subj.day || 'TBA'} • ${subj.room || 'No room'}</div>
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <div>${codeBadge}${todayBadge}</div>
+                <div class="text-sm text-gray-600">${subj.startTime ? formatTime(subj.startTime) + ' - ' + formatTime(subj.endTime || subj.startTime) : 'TBA'}</div>
+              </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+              <div class="text-sm text-gray-500">Late threshold</div>
+              <div class="text-sm font-medium text-violet-700">${subj.lateThreshold != null ? subj.lateThreshold + ' mins' : '—'}</div>
+            </div>
+          `;
+
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Failed to load subjects:', err);
+      }
+    }
+
+    function formatTime(t) {
+      // Accept HH:MM or H:MM strings and return human-friendly e.g. 08:00 -> 8:00 AM
+      if (!t) return '';
+      try {
+        const [hh, mm] = t.split(':').map(Number);
+        const d = new Date(); d.setHours(hh || 0, mm || 0, 0, 0);
+        return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      } catch (e) { return t; }
+    }
+
+    // Small debounce helper for input events
+    function debounce(fn, wait = 200) {
+      let t;
+      return function(...args) {
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait);
+      };
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const search = document.getElementById('subjectSearch');
+      const clear = document.getElementById('clearSearch');
+      const onlyIT = document.getElementById('onlyIT');
+      const sortSel = document.getElementById('sortSel');
+
+      const debouncedLoad = debounce(loadSubjects, 220);
+      if (search) search.addEventListener('input', debouncedLoad);
+      if (clear) clear.addEventListener('click', (e) => { if (search) search.value = ''; loadSubjects(); });
+      if (onlyIT) onlyIT.addEventListener('change', loadSubjects);
+      if (sortSel) sortSel.addEventListener('change', loadSubjects);
+
+      // initial load
+      loadSubjects();
+    });
+
+    // Weekly schedule loader - renders table rows based on subjects
+    async function loadWeeklySchedule() {
+      try {
+        const res = await fetch('/api/subjects');
+        let json = null;
+        if (res && res.ok) json = await res.json();
+        const data = (json && json.data) ? json.data : [];
+
+        // Map subjects by weekday (Monday..Friday)
+        const days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+        const byDay = {};
+        days.forEach(d => byDay[d] = []);
+        data.forEach(s => {
+          if (s.day && byDay[s.day]) byDay[s.day].push(s);
+        });
+
+        // Collect unique timeslots across the week (start-end)
+        const timesSet = new Set();
+        data.forEach(s => {
+          if (s.startTime && s.endTime) timesSet.add(`${s.startTime}__${s.endTime}`);
+        });
+
+        // If no DB subjects, fallback to fake subjects
+        if (timesSet.size === 0) {
+          const { getFakeITSubjects } = await import('../controllers/authController.js');
+          const fakes = getFakeITSubjects();
+          fakes.forEach(s => {
+            if (s.startTime && s.endTime) timesSet.add(`${s.startTime}__${s.endTime}`);
+            if (s.day && byDay[s.day]) byDay[s.day].push(s);
+          });
+        }
+
+        const times = Array.from(timesSet).map(t => {
+          const [start, end] = t.split('__');
+          return { start, end, key: t };
+        }).sort((a,b) => {
+          const ta = (a.start || '00:00').split(':').map(Number);
+          const tb = (b.start || '00:00').split(':').map(Number);
+          return ta[0]*60+ta[1] - (tb[0]*60+tb[1]);
+        });
+
+        // Build rows
+        const tbody = document.getElementById('weeklyScheduleBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (times.length === 0) {
+          // show empty row
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">-</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" colspan="5">No scheduled classes</td>
+          `;
+          tbody.appendChild(tr);
+          return;
+        }
+
+        times.forEach(slot => {
+          const tr = document.createElement('tr');
+          const timeLabel = `${formatTime(slot.start)} - ${formatTime(slot.end)}`;
+          let rowHtml = `<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${timeLabel}</td>`;
+
+          days.forEach(d => {
+            const cellSubjects = (byDay[d] || []).filter(s => (s.startTime||'') === slot.start && (s.endTime||'') === slot.end);
+            if (cellSubjects.length === 0) {
+              rowHtml += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>`;
+            } else {
+              const content = cellSubjects.map(s => `<div class="text-sm text-gray-900">${s.name}</div><div class="text-sm text-gray-500">${s.room || ''}</div>`).join('<hr class="my-1"/>');
+              rowHtml += `<td class="px-6 py-4 whitespace-nowrap">${content}</td>`;
+            }
+          });
+
+          tr.innerHTML = rowHtml;
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        console.error('Failed to load weekly schedule:', err);
+      }
+    }
+
+    // Load weekly schedule on DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+      loadWeeklySchedule();
+    });
+
+    // User menu & profile card behavior
+    (function() {
+      const btn = document.getElementById('userMenuBtn');
+      const menu = document.getElementById('userMenu');
+      const profileCard = document.getElementById('profileCard');
+      const openProfileLink = document.getElementById('openProfile');
+      const closeProfileBtn = document.getElementById('closeProfile');
+
+      function toggleMenu(show) {
+        if (!menu || !btn) return;
+        const isShown = !menu.classList.contains('hidden');
+        const willShow = typeof show === 'boolean' ? show : !isShown;
+        menu.classList.toggle('hidden', !willShow);
+        btn.setAttribute('aria-expanded', String(willShow));
+      }
+
+      function closeEverything() {
+        if (menu && !menu.classList.contains('hidden')) menu.classList.add('hidden');
+        if (profileCard && !profileCard.classList.contains('hidden')) profileCard.classList.add('hidden');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
+
+      // Try to load profile info from multiple endpoints; return plain object or null
+      async function fetchProfile() {
+        const endpoints = ['/api/student', '/api/admin', '/api/user'];
+        for (const ep of endpoints) {
+          try {
+            const res = await fetch(ep);
+            if (!res || !res.ok) continue;
+            const json = await res.json();
+            // Accept either { data: {...} } or raw object
+            const payload = json && json.data ? json.data : json;
+            if (payload) return payload;
+          } catch (e) {
+            // ignore and try next
+          }
+        }
+        return null;
+      }
+
+      async function openProfileCard(e) {
+        e && e.preventDefault();
+        // hide menu, show profile card
+        if (menu) menu.classList.add('hidden');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+
+        if (!profileCard) return;
+        // populate from API if possible
+        const data = await fetchProfile();
+        const nameEl = document.getElementById('profileName');
+        const emailEl = document.getElementById('profileEmail');
+        const courseEl = document.getElementById('profileCourse');
+        const yearEl = document.getElementById('profileYear');
+        const initials = document.getElementById('profileInitials');
+
+        if (data) {
+          if (nameEl) nameEl.textContent = data.fullName || data.name || '{{ userName }}';
+          if (emailEl) emailEl.textContent = data.email || data.username || '';
+          if (courseEl) courseEl.textContent = data.course || data.department || '—';
+          if (yearEl) yearEl.textContent = data.year || data.yearLevel || '—';
+          if (initials && (data.fullName || data.name || '{{ userName }}')) {
+            const base = (data.fullName || data.name || '{{ userName }}').trim();
+            initials.textContent = base.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+          }
+        } else {
+          // Fallback to template-provided userName
+          if (nameEl) nameEl.textContent = '{{ userName }}';
+          if (emailEl) emailEl.textContent = '';
+          if (courseEl) courseEl.textContent = '—';
+          if (yearEl) yearEl.textContent = '—';
+          if (initials) initials.textContent = ('{{ userName }}'.split(' ')[0] || '').charAt(0).toUpperCase();
+        }
+
+        profileCard.classList.remove('hidden');
+        // focus for accessibility
+        profileCard.setAttribute('tabindex','-1');
+        profileCard.focus();
+      }
+
+      // Event wiring
+      if (btn) btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        // toggle menu
+        toggleMenu();
+      });
+
+      if (openProfileLink) openProfileLink.addEventListener('click', openProfileCard);
+      if (closeProfileBtn) closeProfileBtn.addEventListener('click', (e) => { e.preventDefault(); if (profileCard) profileCard.classList.add('hidden'); });
+
+      // click outside to close
+      document.addEventListener('click', (ev) => {
+        const target = ev.target;
+        if (!target) return;
+        const withinMenu = document.getElementById('userMenuContainer') && document.getElementById('userMenuContainer').contains(target);
+        const withinProfile = profileCard && profileCard.contains(target);
+        if (!withinMenu && !withinProfile) {
+          closeEverything();
+        }
+      });
+
+      // ESC to close
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape' || ev.key === 'Esc') {
+          closeEverything();
+        }
+      });
+    })();
   </script>
 </body>
 {{> footer }}

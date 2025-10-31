@@ -60,7 +60,7 @@
           <a href="/student/calendar" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
             Calendar
           </a>
-          <a href="/subjects" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+          <a href="/student/subjects" class="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
             Subjects
           </a>
         </div>
@@ -113,14 +113,14 @@
 
           <!-- Late Arrivals Card -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-100 rounded-full -mr-10 -mt-10"></div>
+            <div class="absolute top-0 right-0 w-20 h-20 bg-amber-100 rounded-full -mr-10 -mt-10"></div>
             <div class="relative">
               <h3 class="text-sm font-medium text-gray-600 mb-2">Late Arrivals</h3>
               <div class="flex items-center">
-                <div id="lateArrivals" class="text-5xl font-extrabold text-yellow-600 mb-1">18</div>
+                <div id="lateArrivals" class="text-5xl font-extrabold text-amber-600 mb-1">18</div>
                 <span id="estimatedLateBadge" class="ml-3 text-xs text-gray-500 hidden">Estimated</span>
               </div>
-              <div class="text-sm text-yellow-600">7.3% late arrival rate</div>
+              <div class="text-sm text-amber-600">7.3% late arrival rate</div>
             </div>
           </div>
         </div>
@@ -197,7 +197,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6 transform transition-all">
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-start space-x-4">
-              <div id="profileAvatar" class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center text-green-600 font-semibold text-lg">AB</div>
+                <div id="profileAvatar" class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center text-green-600 font-semibold text-lg">AB</div>
               <div>
                 <div id="profileFullName" class="font-semibold text-gray-900 dark:text-gray-100">Full Name</div>
                 <div id="profileCourse" class="text-sm text-gray-500 dark:text-gray-300">Information Technology</div>
@@ -205,8 +205,8 @@
               </div>
             </div>
             <div class="text-right">
-              <div id="profileYear" class="text-sm text-gray-500">3rd Year Year</div>
-              <div class="mt-2 inline-block bg-green-600 text-white px-3 py-1 rounded-full text-sm">Active</div>
+              <div id="profileYear" class="text-sm text-gray-500">{{ yearLevel }}</div>
+                <div class="mt-2 inline-block bg-green-600 text-white px-3 py-1 rounded-full text-sm">Active</div>
             </div>
           </div>
 
@@ -225,10 +225,10 @@
               <input name="email" type="email" class="w-full border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
               <input name="contact" class="w-full border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
             </div>
-            <div class="mt-4 flex justify-end space-x-3">
-              <button type="button" id="saveProfileBtn" class="px-4 py-2 rounded bg-green-600 text-white">Save</button>
-              <button type="button" data-close="modal" class="px-4 py-2 rounded bg-gray-200">Cancel</button>
-            </div>
+          <div class="mt-4 flex justify-end space-x-3">
+            <button type="button" id="saveProfileBtn" class="px-4 py-2 rounded bg-green-600 text-white">Save</button>
+            <button type="button" data-close="modal" class="px-4 py-2 rounded bg-gray-200">Cancel</button>
+          </div>
           </form>
 
           <div class="mt-4 flex justify-end">
@@ -321,6 +321,8 @@
         document.getElementById('profileStudentId').textContent = data.studentId || '';
         document.getElementById('profileEmail').textContent = data.email || '';
         document.getElementById('profileContact').textContent = data.contact || '-';
+  // year level
+  const profileYearEl = document.getElementById('profileYear'); if (profileYearEl) profileYearEl.textContent = data.year || '';
         // avatar initials
         const initials = (data.fullName || '').split(' ').map(n => n.charAt(0)).slice(0,2).join('').toUpperCase();
         const avatar = document.getElementById('profileAvatar'); if (avatar) avatar.textContent = initials;
@@ -489,19 +491,27 @@
       const labels = (attendance && attendance.labels) || [];
       const dataArr = toPercentArray((attendance && attendance.data) || []);
 
+      // build a subtle gradient for the line fill
+      const grad = ctx.createLinearGradient(0, 0, 0, 400);
+      grad.addColorStop(0, 'rgba(16,185,129,0.18)');
+      grad.addColorStop(1, 'rgba(16,185,129,0.02)');
+
+      // Render weekly attendance as a smooth green line with area fill
       weeklyChart = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
           labels: labels,
           datasets: [{
             label: 'Attendance %',
             data: dataArr,
-            backgroundColor: '#10b981',
             borderColor: '#10b981',
-            borderWidth: 1,
-            borderRadius: 4,
-            maxBarThickness: 48,
-            barPercentage: 0.7
+            backgroundColor: grad,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: '#10b981',
+            pointBorderColor: '#fff',
+            pointRadius: 5
           }]
         },
         options: {
@@ -548,7 +558,7 @@
         type: 'line',
         data: {
           labels: labels,
-          datasets: [{ label: 'Average Attendance %', data: values, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6 }]
+          datasets: [{ label: 'Average Attendance %', data: values, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6 }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: function(v){ return v + '%'; } }, grid: { color: '#f3f4f6' } }, x: { grid: { color: '#f3f4f6' } } }, plugins: { legend: { display: false } } }
       });
@@ -587,14 +597,25 @@
             return { weekly, dept, months, metrics };
           }
 
-          const fallback = makeFakeData();
-          const metrics = (data && data.metrics) ? data.metrics : fallback.metrics;
-      safeText('totalStudents', metrics.totalStudents || metrics.totalRecords || 0);
-      safeText('presentToday', metrics.presentToday || 0);
-      safeText('absentToday', metrics.absentToday || 0);
-      const attendanceRate = metrics.attendanceRate != null ? metrics.attendanceRate : 0;
-      safeText('lateArrivals', attendanceRate + '%');
-      if (metrics.absentRate != null) safeText('absentRate', (metrics.absentRate + '%'));
+      const fallback = makeFakeData();
+      const metrics = (data && data.metrics) ? data.metrics : fallback.metrics;
+
+    // Ensure absentToday is at least 30 (per request) and cap late-arrival percent to <100%
+    const totalStudentsVal = metrics.totalStudents || metrics.totalRecords || 0;
+    const presentVal = Number(metrics.presentToday || 0);
+    const absentVal = Math.max(Number(metrics.absentToday || 0), 30);
+    const attendanceRate = metrics.attendanceRate != null ? Number(metrics.attendanceRate) : 0;
+
+    safeText('totalStudents', totalStudentsVal);
+    safeText('presentToday', presentVal);
+    safeText('absentToday', absentVal);
+
+    // Cap displayed late-arrival percentage to 99% to avoid showing 100%
+    const latePercentRaw = Number(metrics.lateArrivals != null ? metrics.lateArrivals : attendanceRate || 0);
+    const displayLatePercent = Math.min(Math.max(Math.round(latePercentRaw), 0), 99);
+    safeText('lateArrivals', displayLatePercent + '%');
+
+    if (metrics.absentRate != null) safeText('absentRate', (metrics.absentRate + '%'));
 
       // Show Estimated badges when displayed (possibly inflated) values differ from raw _actual values returned by the server
       try {

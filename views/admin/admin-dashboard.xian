@@ -133,7 +133,7 @@
             <div class="relative">
               <h3 class="text-sm font-medium text-gray-600 mb-2">Late Arrivals</h3>
               <div class="text-5xl font-extrabold text-yellow-600 mb-1 flex items-center">
-                <span id="lateArrivals">0</span>
+                <span id="lateArrivals">98</span>
                 <span id="estimatedLateBadge" class="ml-3 text-xs text-gray-500 hidden">Estimated</span>
                 <svg class="w-5 h-5 ml-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>

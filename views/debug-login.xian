@@ -1,0 +1,71 @@
+{{> head}}
+<body class="min-h-screen bg-gray-100 p-8">
+  <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+    <h1 class="text-2xl font-bold mb-4">Debug Login</h1>
+    
+    <div id="errorBox" class="hidden mb-4 p-4 bg-red-100 text-red-700 rounded"></div>
+    
+    <form id="debugForm" class="space-y-4">
+      <div>
+        <label class="block text-gray-700">Email or Username</label>
+        <input type="text" name="email" class="w-full p-2 border rounded" required>
+      </div>
+      
+      <div>
+        <label class="block text-gray-700">Password</label>
+        <input type="password" name="password" class="w-full p-2 border rounded" required>
+      </div>
+      
+      <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+        Test Login
+      </button>
+    </form>
+    
+    <div class="mt-4">
+      <h2 class="font-bold mb-2">Debug Output:</h2>
+      <pre id="output" class="bg-gray-100 p-4 rounded overflow-auto max-h-96"></pre>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('debugForm');
+    const output = document.getElementById('output');
+    const errorBox = document.getElementById('errorBox');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+      
+      try {
+        const response = await fetch('/debug-login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        output.textContent = JSON.stringify(result, null, 2);
+        
+        if (result.success) {
+          errorBox.classList.add('hidden');
+          if (result.redirect) {
+            window.location.href = result.redirect;
+          }
+        } else {
+          errorBox.textContent = result.error;
+          errorBox.classList.remove('hidden');
+        }
+        
+      } catch (error) {
+        output.textContent = `Error: ${error.message}`;
+        errorBox.textContent = 'An error occurred';
+        errorBox.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+{{> footer}}
